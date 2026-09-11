@@ -1,0 +1,1 @@
+"""Scene-independent constellation detection."""

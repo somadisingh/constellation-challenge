@@ -1,0 +1,31 @@
+# Local environment and caches
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Kaggle dataset (each collaborator downloads their own copy)
+/train/
+/validation/
+/patterns/
+/participant/
+/data/
+/sample_submission.csv
+/train_ground_truth.csv
+
+# Generated predictions, reports, notebooks and packages
+/outputs/
+/deliverables/
+*.executed.ipynb
+*.zip
+*.pt
+*.pth
+*.ckpt
+
+# Local credentials
+.env
+.env.*
+!.env.example
+kaggle.json
