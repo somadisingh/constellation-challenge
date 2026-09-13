@@ -32,6 +32,9 @@ class Config:
     # suppression, so the losses are tail truncation and representation, not
     # retrieval. 'blur' and 20 reproduce the previous baseline exactly.
     verify_rep: str = 'blur'
+    # 'fixed' reproduces the frozen baseline; 'adaptive' follows the radius each
+    # pose admits (see retrieval.verify_adaptive).
+    verify_radius: str = 'fixed'
     def verify_pair(self, image, patch):
         """Preprocessed (scene, patch) pair handed to `retrieval.verify`."""
         f = VERIFY_REPS[self.verify_rep]
@@ -80,7 +83,11 @@ def predict_scene(image, patches, patterns, config):
                 from .dense import dense_candidates
                 proposed=np.unique(np.vstack([proposed,dense_candidates(image,patch)]),axis=0)
             scene_rep,patch_rep=config.verify_pair(image,patch)
-            refined=verify(scene_rep,patch_rep,proposed,config.alternatives)
+            if config.verify_radius=='fixed':
+                refined=verify(scene_rep,patch_rep,proposed,config.alternatives)
+            else:
+                from .retrieval import verify_adaptive
+                refined=verify_adaptive(scene_rep,patch_rep,proposed,config.alternatives,config.verify_radius)
             coarse=refined
             if config.mode in REFINE_MODES:
                 from .refine import refine_candidates

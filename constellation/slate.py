@@ -33,9 +33,18 @@ class QuerySlate:
     calib: np.ndarray     # (k,) calibration score
     rank: np.ndarray      # (k,) ranking score
     seed: int             # index of the grouping/seed anchor
+    # Candidates admitted to the verification pool on geometric grounds, regardless of
+    # their appearance gap. Only ever set to candidates that already exist, so no
+    # location is manufactured from a template prediction.
+    eligible: np.ndarray = None
 
     def __len__(self):
         return len(self.xy)
+
+    def eligible_indices(self):
+        if self.eligible is None:
+            return []
+        return [int(i) for i in np.where(np.asarray(self.eligible, bool))[0]]
 
     @property
     def report_index(self):
@@ -90,10 +99,20 @@ def slates_from_lists(alternatives):
     return [slate_from_candidates(q) for q in alternatives]
 
 
-def with_scores(slate, rank=None, calib=None, seed=None):
+def with_scores(slate, rank=None, calib=None, seed=None, eligible=None):
     """Copy of `slate` with selected roles replaced. Candidate identity is kept."""
     return QuerySlate(
         xy=slate.xy, pose=slate.pose,
         calib=slate.calib if calib is None else np.asarray(calib, float),
         rank=slate.rank if rank is None else np.asarray(rank, float),
-        seed=slate.seed if seed is None else int(seed))
+        seed=slate.seed if seed is None else int(seed),
+        eligible=slate.eligible if eligible is None else np.asarray(eligible, bool))
+
+
+def mark_eligible(slate, nodes, radius):
+    """Flag candidates lying within `radius` of any predicted node position."""
+    if slate is None or not len(slate) or nodes is None or not len(nodes):
+        return with_scores(slate, eligible=np.zeros(len(slate), bool))
+    d = np.linalg.norm(slate.xy[:, None, :] - np.asarray(nodes, float)[None, :, :],
+                       axis=2)
+    return with_scores(slate, eligible=(d.min(axis=1) <= radius))

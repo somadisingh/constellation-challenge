@@ -599,3 +599,590 @@ gating item.
 4. Relocation adoption driven by geometric rather than appearance evidence, since
    `GroupHeldOutSupport` at 0.7204 was the least damaging guard and the only one using
    independent geometry.
+
+---
+
+# Pose-admissible verification — September 12, 2026 (fourth pass)
+
+**Outcome: baseline retained as production; one real mechanism found and shipped as a
+selectable flag, not as the default.** The objective of a ≥.05 gain in all four
+components was **not** achieved and is not claimed. What was achieved is a substantial,
+independently measured improvement in candidate retention and presence, together with a
+clear demonstration that it costs recovery on the three labelled scenes.
+
+## A defect in the frozen verifier
+
+`retrieval.verify` samples the scene on a **fixed** radius-12 disc and compares against
+the patch resampled at `15.5 + R(angle)·offset/scale`, skipping any pose whose patch
+coordinates leave `[0, 31]`. The radius a pose actually admits is `15.5·scale`, so the
+fixed choice is wrong in both directions:
+
+| scale | admissible radius | angles usable with radius 12 |
+|---|---:|---:|
+| 0.75 | 11.6px | **12 of 24** |
+| 0.87 | 13.5px | 24 of 24 |
+| 1.00 | 15.5px | 24 of 24 |
+| 1.15 | 17.8px | 24 of 24 |
+| 1.33 | 20.6px | 24 of 24 |
+
+Half of scale 0.75 was unreachable, and at scale 1.33 roughly two thirds of the valid
+area was discarded. `retrieval.verify_adaptive` sets the radius to `floor(15.2·scale)`.
+Sampling direction, the 15.5 even-patch centre convention and the in-bounds requirement
+are unchanged, and a test asserts no pose reads outside the patch, so the larger support
+cannot be rewarded for sampling invalid borders. Poses are searched fresh per proposal;
+no cached pose metadata is reused.
+
+## Measured over the full proposal pool
+
+All 116 labelled queries, every cached proposal scored (~2,200 per query), identical
+positions, equal runtime (about 1s for all queries per variant):
+
+| variant | recall12@20 | recall12@40 | recall4@20 | rank<20 | figure | off-figure | present−absent |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| production, fixed 12, blur | 0.901 | 0.958 | 0.873 | 0.859 | 0.885 | 0.911 | 0.074 |
+| **adaptive radius, blur** | **0.972** | 0.972 | **0.958** | **0.944** | **1.000** | **0.956** | **0.117** |
+| adaptive, stride 1 | 0.958 | 0.972 | 0.958 | 0.958 | 1.000 | 0.933 | 0.132 |
+| adaptive, blur, centre+annulus | 0.958 | 0.972 | 0.930 | 0.930 | 0.962 | 0.956 | 0.137 |
+| adaptive, DoG .8/2.5 | 0.930 | 0.944 | 0.901 | 0.930 | 0.962 | 0.911 | 0.069 |
+| fixed 12, DoG .8/2.5 | 0.944 | 0.944 | 0.944 | 0.915 | 0.962 | 0.933 | 0.024 |
+
+Every present query now has its correct neighbourhood in the pool, and the adaptive
+policy retains it for **all 26 figure queries**. The seven previously uncovered queries
+move from pre-selection ranks 39, 23, 247, 50, 153, 63, 149 to 6, 6, 88, 32, 2, 35, 323.
+
+DoG, which looked helpful at fixed radius, is **worse** once the radius is adaptive. The
+earlier fixed-radius comparison could not have revealed that interaction, which is why
+the earlier DoG result is scoped rather than discarded.
+
+## End to end it loses, and the reason is specific
+
+| configuration | total | worst | presence | localization | figure loc | off-fig loc | recovery | id |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| **baseline (production)** | **0.72869** | 0.487 | 0.7173 | 0.6496 | 0.577 | 0.711 | **0.878** | 2/3 |
+| adaptive, shipped calibration | 0.7019 | 0.432 | **0.7371** | 0.6439 | 0.500 | 0.756 | 0.756 | 2/3 |
+| adaptive, best recalibration | 0.7162 | 0.451 | 0.7371 | 0.636 | 0.500 | 0.726 | 0.819 | 2/3 |
+
+Presence improved on **all three scenes** (0.669→0.712, 0.813→0.837, and 0.669→0.662 on
+Taurus alone), consistent with the separation rising 0.074→0.117. Off-figure
+localization improved. Recovery fell on all three, and that dominates.
+
+The mechanism, confirmed by sweeping the downstream constants:
+
+- With better verification the correct location wins more decisively, so fewer queries
+  fall inside the ambiguity gate, so fewer alternatives reach the pool, so geometry
+  relocates less. **The baseline's 0.878 recovery depends partly on ambiguity that
+  better appearance evidence removes.**
+- Figure retention is 1.000 while figure localization is 0.500-0.538, below the
+  baseline's 0.577. The correct candidate is retained but neither ranked first nor
+  relocated to.
+
+Recalibration was attempted properly, after the upstream change had been established on
+its own metric. Threshold × gap over 24 configurations: best 0.7076 in-sample,
+leave-one-scene-out 0.6721. Widening pool eligibility: gaps of 0.12, 0.25 and 1.01 are
+identical because the 0.15 pool margin becomes the binding constraint; `top_k` 12 helps
+recovery (0.789→0.819); best 0.7162. Widening the margin to 0.30, 0.50 and 1.00 is
+flat or worse. So the loss is not a missed calibration.
+
+## Decision
+
+Production stays on the frozen verifier. `--verify-radius adaptive` selects the new one.
+This is a genuine component trade-off, retained and documented rather than presented as
+an all-round gain:
+
+- **Better with adaptive:** candidate retention (+0.071 recall@12, +0.085 recall@4,
+  figure retention 0.885→1.000), presence (+0.020, improved on every scene),
+  present/absent separation (+0.043), off-figure localization (+0.045).
+- **Worse with adaptive:** recovery (−0.059 at best calibration), figure localization
+  (−0.077), equal-scene total (−0.013 at best calibration), worst scene (0.487→0.451).
+- Identification unchanged at 2/3 in every configuration; no scene flipped, so nothing
+  here rests on an identification flip.
+
+## Not done this iteration
+
+**Workstream 2, the image-level benchmark, was not built.** It is not claimed as
+complete. The pass instead spent its budget on Workstream 1, which the diagnosis
+identified as the binding constraint, and that produced the retention result above. The
+benchmark remains the gate for deciding whether the adaptive verifier's retention gain
+can be converted into a total gain, because the three labelled scenes cannot resolve the
+recovery/retention exchange: one identification flip is worth 0.10 of the mean and a
+single-query localization repair 0.0025-0.0037.
+
+Workstreams 3-5 were correspondingly not reached beyond the calibration work reported
+above.
+
+## Next experiment, highest value first
+
+1. **Break recovery's dependence on ambiguity.** The exchange is now precisely located:
+   recovery needs alternatives in the pool, and better scores stop supplying them. Decouple
+   pool eligibility from the appearance gap entirely — admit each query's top few
+   alternatives on a geometric criterion (proximity to any competing fit's predicted
+   nodes) rather than on score proximity. This is the direct route from the retention
+   gain to a recovery gain and needs no simulator.
+2. Rank the retained candidates better for figure queries specifically, since retention
+   is now 1.000 and figure localization is the shortfall. Note the factorial result:
+   change ranking without touching seeds.
+3. The image-level benchmark, as the gate for anything that shifts score distributions.
+4. Chance-fit calibration and seed-independent support for identification, which has not
+   moved in any pass and is 30% of the score.
+
+---
+
+# Geometry-guided pool eligibility — September 12, 2026 (fifth pass)
+
+**Outcome: baseline retained.** The mechanism works and is measurable, but the best
+combination still does not beat production. Production stays at 0.72869; predictions are
+bit-identical and 51 tests pass.
+
+## Mechanism
+
+Pool eligibility was decided solely by the top-two appearance gap, which is why
+improving the appearance score *reduced* recovery: better scores make queries less
+ambiguous, so fewer alternatives reach the verification pool and geometry relocates less.
+
+`constellation/twopass.py` decouples the two. A first pass produces competing
+hypotheses; the node positions they predict then admit any **already existing** candidate
+lying within `node_radius`, whatever its appearance gap, and a second pass re-verifies.
+`QuerySlate.eligible` carries this, and `build_pool` gives eligible candidates precedence
+when the per-query cap binds. No location is manufactured from a template prediction —
+a test asserts that only existing candidate coordinates can enter the pool, and that
+eligibility changes neither the presence decision nor the ambiguity gap.
+
+## Results
+
+Two-pass at node radius 18 with three leading hypotheses, on both candidate sets:
+
+| candidate set | two-pass | total | presence | localization | figure loc | off-fig loc | recovery |
+|---|:--:|---:|---:|---:|---:|---:|---:|
+| baseline (production) | no | **0.72869** | 0.717 | 0.650 | 0.577 | 0.711 | **0.878** |
+| baseline | yes | 0.7051 | 0.717 | 0.536 | 0.423 | 0.600 | 0.875 |
+| adaptive | no | 0.7019 | **0.737** | 0.644 | 0.538 | 0.733 | 0.756 |
+| adaptive | yes | 0.7185 | **0.737** | 0.643 | **0.615** | 0.689 | 0.822 |
+
+The mechanism behaves exactly as designed *on the candidate set it was designed for*:
+on adaptive candidates it lifts recovery 0.756 → 0.822 and figure localization
+0.538 → 0.615, the best figure localization of any configuration tested, above the
+baseline's 0.577. On the frozen candidates it hurts, which is consistent — those queries
+were already ambiguous, so the gate was already supplying their alternatives, and extra
+eligibility only adds noise.
+
+A bounded push on the remaining recovery deficit (top_k 8/12/16 × gap 0.03/0.05 ×
+threshold 0.72/0.74, second pass active) plateaus at 0.7185. Node radius 12 and 25, and
+one or eight leading hypotheses, are all worse than radius 18 with three.
+
+## Why recovery still falls short, measured
+
+Oracle recovery over each set's retained candidates, presence decisions held at each
+set's own threshold:
+
+| candidate set | achieved | ceiling over top 20 | ceiling over top 8 |
+|---|---:|---:|---:|
+| baseline fixed 12 | 0.878 | 0.900 | 0.811 |
+| adaptive | 0.822 | **0.933** | 0.844 |
+
+Two things follow.
+
+1. **Adaptive has the better candidates for recovery** (ceiling 0.933 against 0.900) and
+   the pipeline extracts less from them: 88% of ceiling against production's 98%. So the
+   residual deficit is an assignment problem, not a candidate problem, and the two-pass
+   closes only part of it.
+2. Production's 0.878 *exceeds* the baseline's own refined-candidate ceiling over the top
+   8. That is not a contradiction: when the coarse branch wins the competition its pool
+   holds coarse positions absent from the refined list, so production draws recovery from
+   a wider position set than any refined-only ceiling describes. Any future ceiling
+   estimate must include both branches.
+
+Per scene the adaptive candidate set is not uniformly better for recovery: Pisces
+improves (0.800 → 1.000) and Scorpius regresses (0.900 → 0.800), and Scorpius is exactly
+where production earns 1.000. So the adaptive verifier's retention gain, real as it is at
+the 12px criterion, does not translate into uniformly better positions for the recovery
+metric.
+
+## Standing component picture
+
+Best available per component across everything tested, with the configuration that
+achieves it:
+
+| component | best | configuration | production |
+|---|---:|---|---:|
+| presence | 0.7371 | adaptive verifier (any pool policy) | 0.7173 |
+| localization overall | 0.6760 | fixed radius + DoG, keep 20 | 0.6496 |
+| figure localization | 0.6150 | adaptive + two-pass | 0.5770 |
+| off-figure localization | 0.7780 | relocation guarded by independent appearance | 0.7110 |
+| recovery | 0.8778 | production | 0.8778 |
+| identification | 2/3 | unchanged in every configuration tested | 2/3 |
+| equal-scene total | **0.72869** | **production** | — |
+
+No configuration improves two or more components without regressing another by more, and
+identification has not moved in five passes. The 0.05-across-all-four target is not met
+and is not claimed.
+
+## Next
+
+Identification is the remaining block and the largest one: 0.30 weight, unchanged across
+five passes, and backing out from the user-reported ~0.637 against these development
+components implies roughly 0.36 on the hidden scenes — about 6 of 16 — against 2/3 on
+development. It is also the only component measurable with real statistical power, on the
+synthetic geometry benchmark at n≈192.
+
+Untested there, in order:
+1. Chance-fit calibration that accounts for candidate-pool multiplicity and
+   hypothesis-search multiplicity. The current binomial null ignores that roughly 40 of
+   48 templates achieve four-point fits in any scene, so it is calibrated against the
+   wrong null and cannot separate the classes it needs to.
+2. Support independent of the seed correspondences.
+3. Agreement between the coarse and refined branches as a stability signal — currently
+   the branches compete and the higher score simply wins, discarding the agreement
+   information entirely.
+4. Auxiliary evidence by source shape, scale and local background rather than the
+   present percentile map.
+
+---
+
+# Identification: chance-fit null — September 12, 2026 (sixth pass)
+
+**Outcome: baseline retained.** Two real faults were found in the chance-fit null and
+both were corrected, but neither produces a statistically supported identification gain.
+The more important result is a ceiling measurement that explains why, and redirects
+identification work away from re-weighting existing features.
+
+Production stays at 0.72869, bit-identical, 51 tests pass.
+
+## Two faults in the null, both confirmed
+
+The verification score is `-log10 P[Binomial(nodes-3, fraction) >= support-4]` with
+`fraction = n_groups · π · tolerance² / 9e6`.
+
+**Chance density is understated.** `fraction` counts query *groups*, but the assignment
+draws from the pooled points, and the pool holds several alternatives per ambiguous
+query. Measured pool median is 124 against roughly 32 groups, so the density is
+understated about fourfold and every class looks more surprising than it is.
+
+**The size correction is too weak.** On 192 synthetic scenes at a seed unused for any
+earlier tuning, the score of a *wrong* class correlates **+0.660** with its node count:
+
+| wrong-class node count | median score | median support | median coverage |
+|---|---:|---:|---:|
+| 4-6 | 2.15 | 4.0 | 1.000 |
+| 7-9 | 3.75 | 5.0 | 0.714 |
+| 10-13 | 3.44 | 5.0 | 0.462 |
+| 14-18 | 4.50 | 6.0 | 0.353 |
+| 19+ | 4.42 | 6.0 | 0.300 |
+
+A wrong 19-node reference scores about as well as a true small one, so large references
+win by size rather than by fit.
+
+`decorrelate_size` subtracts a per-scene robust score-versus-log-size trend fitted across
+all verified classes. Since only one of the roughly 40 classes reaching a verified fit in
+a scene is correct, those fits estimate that scene's null, so the correction is
+self-calibrating and needs no external table. `null_mode` selects `groups` (shipped),
+`pool`, `decorrelate`, or `pool+decorrelate`.
+
+## The corrections work and do not help
+
+Paired per scene over both synthetic seeds pooled, n=384:
+
+| mode | accuracy | scenes gained | scenes lost | net | exact two-sided p |
+|---|---:|---:|---:|---:|---:|
+| groups (shipped) | 0.482 | — | — | — | — |
+| pool | 0.487 | 6 | 4 | +2 | 0.754 |
+| decorrelate | 0.482 | 11 | 11 | 0 | 1.000 |
+| pool+decorrelate | 0.500 | 16 | 9 | +7 | 0.230 |
+
+The bias correction does what it claims — small-reference accuracy rises from 0.036 to
+0.091 and large-reference accuracy falls from 0.766 to 0.740 on the fresh seed — but the
+reallocation is close to zero-sum on a size-uniform benchmark. A +0.036 gain seen on seed
+2027 did **not** replicate on seed 4099 (0.469 for `groups`, `pool` and
+`pool+decorrelate` alike); it was seed noise, and is reported as such rather than as the
+headline.
+
+On the three labelled scenes every null mode leaves identification at 2/3, and the total
+falls from 0.72869 to 0.7111 because Taurus moves between two wrong classes and that
+shifts membership.
+
+Not adopted as default. It is also a **bet on the unknown class-size distribution**: the
+three labelled references have 18, 13 and 12 nodes, all large, and the correction trades
+large-reference accuracy for small. With the size distribution of the unlabelled scenes
+unknown, adopting it would be an unhedged wager, not an improvement.
+
+## Why identification is stuck, measured
+
+Within-scene separability of each available feature, true class against every wrong class
+that reached a verified fit (n=7,466 wrong fits, 192 true fits):
+
+| feature | AUC |
+|---|---:|
+| fit score | 0.857 |
+| support | 0.825 |
+| coverage | 0.456 |
+| mean residual | 0.454 |
+
+Coverage and residual are **at or below chance**, so two of the four terms currently
+carried in the score contribute nothing discriminative. Score reaches 0.857, and with
+roughly 40 competing verified classes per scene an AUC of 0.857 lands identification near
+0.5 — which is where it sits.
+
+That is the finding: identification is limited by the *discriminative content* of the
+current fit features, not by the calibration of the null. Re-weighting or re-normalising
+what is already measured cannot move it much, which is consistent with six passes of
+null, budget, tolerance, support, model and auxiliary-weight sweeps all failing to move
+it. Progress requires an independent signal.
+
+## Next, and it must be a new signal
+
+1. **Coarse/refined branch agreement.** The two branches produce independent fits from
+   different candidate sets, and the pipeline currently discards that by letting the
+   higher score win outright. Whether both branches independently choose the same class
+   is information not present in any single fit. Not testable on the synthetic benchmark
+   as built, since it supplies one candidate list per query; needs the image-level
+   benchmark or a second synthetic branch.
+2. **Support independent of the seed correspondences.** Support currently includes the
+   three or four points that defined the transform, which is self-confirming.
+3. **Auxiliary evidence by source quality** — shape, scale, local background at predicted
+   unmatched nodes — rather than the present percentile map. The map is informative
+   (figure points 0.79-0.94 against 0.50 for random) but coarse.
+4. Drop coverage and residual from the score, or replace them, given AUC 0.456 and 0.454.
+
+---
+
+# Image-level benchmark — Workstream 2, September 12, 2026
+
+**Outcome: implemented and executed as benchmark infrastructure. Production unchanged.**
+The generation, blind evaluation and audit commands are in `lab/imagebench/README.md`.
+The production source hash remains `e61c9e31...`, matching the existing submission
+record. No new leaderboard score, fitted model, or winning configuration is claimed.
+
+## What was built
+
+- **27 real-region scenes**, nine per split: non-overlapping buffered crops from the
+  three training skies. Present queries come from the target region; absent queries
+  come from another sky's same-split region. This is correspondence-only supervision;
+  no parent-scene constellation name is assigned to an arbitrary crop.
+- **144 rendered scenes**, 48 per split, covering every supplied reference in every
+  split, including small references. Skies are 3000x3000, with partial target figures,
+  unissued sources, clustered/uniform clutter, a second-reference fragment, a close
+  pair, repeated query views, real-background structure and elliptical/winged PSFs.
+- **5,335 queries**, all 32x32 grayscale, with centre-preserving transforms, blur,
+  gain/offset/drift, read/shot-style noise and compression. Mild/nominal/stress ranges
+  are explicit hypotheses, not estimates of the unknown competition generator.
+- Development/calibration/confirmation partitions, per-source rectangles with 96px
+  insets (192px gaps), independent keyed random streams, source and artifact hashes,
+  physical-source identities and a resumable manifest. Filters operate after cropping.
+- Separate inputs and labels. The runner builds proposals, verifies and refines matches
+  from pixels before reading truth. Both coarse and refined branches are measured;
+  no oracle coordinates or simulated candidate scores enter inference.
+- Real-region evaluation reports presence/localization only. Rendered full evaluation
+  uses existing `finalize_joint` and reports all four components, reference-size and
+  issued-node strata, and coarse/refined class agreement. Full scores on smaller test
+  renders are rejected because production geometry assumes a 9e6-pixel field area.
+
+## Validation actually executed
+
+All **63 tests pass**, including 12 new benchmark tests for identity/rotated sampling,
+centre preservation, invalid-footprint rejection, source split separation, deterministic
+rendering, partial figures, repeated identities, output hashes, branch-union recall,
+and explicit confirmation access. These tests are not accuracy evidence.
+
+The full 171-scene artifact audit passed: shapes/hashes/labels agree, reference coverage
+is 48 in each split, no cross-split region overlap or exact decoded query duplicates,
+and there are 171 repeated query views with recorded identities. A complete-build
+resume succeeded without regenerating scene artifacts. Confirmation integrity was
+checked but **no confirmation model evaluation was run**.
+
+Development pilots (fixed configuration, no selection/tuning):
+
+| Track / verifier | Scenes / queries | Presence | Localization | Recovery | Identification | Total |
+|---|---:|---:|---:|---:|---:|---:|
+| Real regions, fixed | 2 / 48 | 0.8384 | 0.7813 | not defined | not defined | not defined |
+| Same real regions, adaptive | 2 / 48 | 0.8472 | 0.8125 | not defined | not defined | not defined |
+| Rendered full pipeline, fixed | 1 / 33 | 0.4392 | 0.3158 | 0.3333 | 0 | 0.2563 |
+
+The rendered pilot's coarse and refined branches predicted different wrong classes,
+showing the runner exposes the new agreement measurement from actual image-derived
+candidates. It does not establish that agreement is useful. The branches share inputs
+and processing and are correlated, not independent observations.
+
+The real fixed pilot took about 16s including proposal creation; adaptive reused those
+proposals and took about 1.3s. This is **not** a fair verifier speed comparison. The full
+rendered pilot took about 135s. Complete development/calibration/confirmation inference
+has not been executed; the dataset and resumable runner are ready for those experiments.
+
+## Realism results and limits
+
+`outputs/imagebench/v1/audit.json` compares development patch statistics with all 116
+actual labelled query images. The first rendering hypothesis is measurably different:
+
+| Median | Actual queries | Real-region generated | Rendered generated |
+|---|---:|---:|---:|
+| Brightness mean | 103.4 | 34.1 | 31.8 |
+| Contrast (standard deviation) | 31.8 | 17.0 | 10.3 |
+| Maximum intensity | 254 | 128 | 103 |
+| High-pass standard deviation | 12.6 | 8.6 | 5.1 |
+
+Real-region queries also have weaker centre/annulus contrast: detector-selected sources
+are not distributed like the issued competition queries. Candidate score distributions
+also differ: real-region pilot present-score median is .957 versus .910 on actual
+queries; absent medians are .541 versus .705. Smaller search regions and different
+source/degradation distributions both contribute. No thresholds were retuned to hide
+these differences.
+
+This is a usable controlled benchmark and a reproducible diagnosis of domain mismatch,
+**not yet a validated proxy for leaderboard performance**. The next calibration effort
+must address source selection, brightness/contrast, PSF/background and degradation
+realism using development data, then freeze changes before confirmation. Single-class
+pilot accuracy and thousands of dependent queries do not provide statistical power
+for generalization claims.
+
+The same original skies contribute separate regions to all splits. Rendered scenes reuse
+split-specific background regions. Thus splits prevent pixel/context overlap but do not
+create independent real scenes. Absent source provenance is known, but chance visual
+matches are expected. Donor rendered backgrounds reuse flipped same-split texture;
+that assumption should also be varied. Confirmation remains available for a genuinely
+frozen benchmark comparison, not repeated iterative checking.
+
+## Corrections to interpretation of the preceding passes
+
+The .637 aggregate public score does not determine hidden identification accuracy unless
+the other hidden components are known; the earlier inferred .36 identification is not
+an observation. A single-feature AUC does not mathematically determine multi-class
+accuracy or prove an identification ceiling, and a near-chance marginal feature can
+still carry conditional information. These are hypotheses motivating new evidence,
+not grounds for declaring all reweighting or residual information exhausted.
+
+## Artifacts and next use
+
+- `outputs/imagebench/v1/manifest.json`: generation build, sources, splits and inventory.
+- `outputs/imagebench/v1/audit.json`: integrity, descriptive realism, real/pilot score gaps.
+- `outputs/imagebench/runs/{real-fixed,real-adaptive,rendered-fixed}/`: executed pilot
+  predictions, candidate lists, query metrics and source/configuration manifests.
+- `outputs/imagebench/workstream2_record.json`: machine-readable completion and limits;
+  merged into `outputs/joint_submission_record.json` by `lab/record_pass2.py`.
+
+Use the benchmark to improve realism first, then compare the frozen and adaptive/two-pass
+packages with development and calibration data. Preserve confirmation until the
+configuration is frozen. Production inference, submission CSV and model defaults remain
+untouched by this Workstream 2 implementation.
+
+## Workstream 2 realism revision — 2026-09-13
+
+The v1 brightness gap was primarily source selection. Correctly localized supplied
+queries follow their parent crop brightness; adding an arbitrary query offset would
+hide the source mismatch. Version 2 fits parent-crop style summaries using 17 labelled
+present sources whose complete 96-pixel footprints fall inside development regions.
+Calibration/confirmation pixels do not fit the source model. This is a small fitted
+sample, not independent evidence of distribution equivalence.
+
+Implemented `lab/imagebench/realism.py` for reproducible fitting and comparison.
+Real-region sampling now selects existing sources using brightness, contrast,
+centre/annulus and highpass summaries, identically for present and absent donors.
+Rendered backgrounds use fitted quantiles; Gaussian/Moffat stars have broader profiles
+and halos. Renderer ranges are engineering assumptions. Query degradation is unchanged.
+
+Full v2: 171 scenes, 5,278 queries, all 48 references in each split. Integrity passes
+with 14 constant saturated queries explicitly listed. Identical white patches across
+splits are saturation collisions; nonconstant cross-split duplicates still fail.
+The source model and fit footprints are embedded and checked. Confirmation inference
+was not run. The v1 dataset and its results remain historical evidence.
+
+| Development median | Real v1 | Real v2 | Rendered v1 | Rendered v2 |
+|---|---:|---:|---:|---:|
+| Mean intensity | 34.07 | 87.47 | 31.76 | 129.26 |
+| Within-patch contrast | 17.02 | 31.53 | 10.26 | 30.69 |
+| Maximum intensity | 128 | 214.5 | 103 | 248 |
+
+Against the 17 development query references, normalized Wasserstein distance for
+brightness improves .499→.176 (real) and .514→.086 (rendered); contrast improves
+.498→.154 and .662→.180. These distribution distances use reference p90−p10 scaling.
+Fine texture remains mismatched: highpass distance .721→.760 for real and 1.420→1.002
+for rendered. Rendered saturation distance worsens .434→.669. Thus v2 addresses the
+brightness/contrast problem without claiming a complete realism fix.
+
+Two-region, 48-query development pilots: fixed presence .719395/localization .743667;
+adaptive .738163/.812500. These are paired pilot results, not a default-change case.
+The revised samples are harder for absence detection than v1. Generation changes
+alter queries, so v1/v2 score differences are not algorithm improvements. Warm-cache
+timing is not a speed comparison. All 65 tests pass. Production remains unchanged.
+
+Use v2 for controlled Workstream 3 experiments alongside real-scene checks, with v1
+as a sensitivity comparison. Do not tune solely to rendered scores. Improving texture
+and preventing saturation while preserving matched-source photometry remain future
+benchmark tasks. Evidence: `outputs/imagebench/realism_comparison.json`, v2 manifest
+and audit, and `outputs/imagebench/runs/v2-*`.
+
+Frozen-source full rendered pilot (one scene, 37 queries): presence .383333,
+localization .434783, recovery .500000, identification 0, weighted score .307790.
+This checks all-component execution only; one synthetic scene cannot establish method
+quality. Retained runs have the `-final` suffix. The earlier rendered attempt aborted
+on the code-change guard after an audit edit and is excluded from retained evidence.
+
+## Workstream 3 — cross-branch identification experiment, 2026-09-13
+
+Implemented the next documented priority: compare coarse/refined branch agreement
+and rank fusion using actual image-derived candidate sets. This is a bounded first
+identification experiment, not completion of every proposed recognition improvement.
+`lab/branch_agreement.py` fits both branches at production settings and stores all
+48 class hypotheses. `lab/workstream3_report.py` produces component-level comparisons,
+three-scene leave-one-scene-out results, agreement correctness and true-class ranks.
+See `lab/WORKSTREAM3.md` for the fixed nine-rule protocol and reproduction commands.
+
+The rules are maximum raw score (baseline), refined-only, coarse-only, reciprocal
+rank fusion, mean/worst score regret, shared-fit bonuses of one/two score units, and
+a spatially consistent shared-fit bonus. Every rule is tested with relocation and as
+a name-only diagnostic holding all baseline patch outputs fixed. The branches are
+correlated: agreement is a candidate feature, not independent confirmation.
+
+Baseline reconstruction exactly matches every patch coordinate, absence decision,
+membership and constellation name on all three labelled scenes and the existing v2
+rendered pilot. All 70 unit tests pass. Production code and predictions are unchanged.
+
+Labelled weighted scores: baseline .728688, refined .688018, coarse .607083,
+rank fusion .581157, mean/worst regret .711095. All three bonuses tie the baseline.
+No method improves labelled identification beyond 2/3; branch/fit changes can harm
+localization or recovery even when identification stays unchanged.
+
+The six-scene v2 development screen selects refined-only by the predeclared weighted
+score rule: .304233 versus baseline .259439. **Identification is 0/6 for every rule.**
+The gain is localization/recovery, not recognition. Shared-fit and spatial bonuses
+leave all baseline outputs unchanged. Of the six scenes, one has no verified true-class
+fit in either branch; the others have true-class ranks 9–40. Both branches agree on
+their top class in one case, and that agreement is wrong. These observations reject
+an assumption that agreement is inherently trustworthy; they do not establish an
+accuracy ceiling or prove all possible consensus methods ineffective.
+
+The selected rule is frozen in `outputs/lab/workstream3/selection.json` before the
+calibration report completes. v1 is a sensitivity screen; six-scene pilots do not
+cover the full catalogue or justify production promotion. Confirmation is not used.
+
+Final sensitivity/calibration results (six scenes each):
+
+| Rule | Real labelled | v1 development | v2 development | v2 calibration |
+|---|---:|---:|---:|---:|
+| Baseline | .728688 | .167658 | .259439 | .282110 |
+| Refined-only (selected on v2 development) | .688018 | .176223 | .304233 | .314888 |
+| Coarse-only | .607083 | .169412 | .261472 | .339221 |
+| Rank fusion | .581157 | .167658 | .278534 | .316615 |
+| Mean regret | .711095 | .167658 | .261193 | .303559 |
+| Worst regret | .711095 | .163491 | .257837 | .299393 |
+| Each agreement/stability bonus | .728688 | .167658 | .259439 | .282110 |
+
+The frozen refined-only choice gains .032778 on calibration, entirely from
+localization (+.025000) and recovery (+.111111); presence and identification are
+unchanged. Coarse-only identifies 1/6 calibration scenes, all other calibration rules
+0/6. Selecting coarse-only after observing this would be calibration-set selection,
+not validation of the development choice. Every rule identifies 0/6 on each synthetic
+development screen. v1 has two agreeing branch winners, both wrong; v2 development
+has one, also wrong; calibration has none. These small counts are descriptive.
+Three-scene leave-one-out selection chooses baseline in every fold, mean .728688.
+
+**Decision: retain production.** The selected synthetic winner regresses on real
+labelled data, and no transferable identification improvement is demonstrated.
+Completed: nine fixed rules × three labelled scenes plus eighteen rendered scenes,
+with full/name-only scoring and source-keyed caches. Confirmation remains untouched.
+Machine record: `outputs/lab/workstream3/record.json`; component tables and ranks:
+`outputs/lab/workstream3/summary.json`. Deliverables include these summaries and guide.
+
+Next: measure support outside the correspondences that generated each transform,
+then test source-quality evidence at unmatched predicted nodes. Before trusting a
+rendered identification gain, audit figure candidate coverage and whether a stored
+true-class fit is actually at the true placement; having a true-class label somewhere
+in a slate does not imply the correct transformation was recovered. Broader catalogue
+coverage and improved image realism remain necessary for generalization claims.

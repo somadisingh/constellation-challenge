@@ -17,7 +17,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 from scipy.stats import binom
 from .geometry import consolidate, triangles
-from .slate import QuerySlate, slate_from_candidates
+from .slate import QuerySlate, slate_from_candidates, mark_eligible
 from .quad import quads
 
 # Rejected transform envelope: scene pixels per normalized template unit.
@@ -55,6 +55,13 @@ def build_pool(slates, groups, top_k=8, margin=.15, gap=.03, pool_by='rank'):
             chosen = [j for j in s.order_by_rank() if j in member]
         else:
             chosen = list(s.order_by_rank()[:limit])
+        # Geometrically eligible candidates are admitted whatever their appearance gap,
+        # and take precedence when the per-query cap binds. They are existing
+        # candidates, never positions invented from a template prediction.
+        elig = [j for j in s.order_by_rank() if j in set(s.eligible_indices())]
+        if elig:
+            chosen = elig + [j for j in chosen if j not in set(elig)]
+            chosen = chosen[:max(limit, min(top_k, len(elig) + 1))]
         for r, j in enumerate(chosen):
             # The margin bounds how far *additional* alternatives may fall below the
             # best calibration. A query's primary contribution is always admitted, so
@@ -183,12 +190,46 @@ class SceneIndex:
         return quad_seeds[:n_quad] + tri_seeds[:n_tri]
 
 
+def decorrelate_size(hypotheses, min_support=4):
+    """Remove the systematic dependence of the fit score on reference size.
+
+    Measured on 192 synthetic scenes at an unused seed, the score of a *wrong* class
+    correlates +0.660 with its node count: a wrong 19-node reference scores about as
+    well as a true small one. Since only one of the roughly 40 classes that reach a
+    verified fit in a scene is correct, those fits estimate the null for that scene, so
+    a robust score-versus-log-size trend fitted across them can be subtracted. This is
+    self-calibrating per scene and needs no external table.
+
+    Mutates `hypotheses` in place, keeping the raw value as `score_raw`.
+    """
+    usable = [h for h in hypotheses
+              if h.get('support', 0) >= min_support and h.get('nodes_count')]
+    if len(usable) < 6:
+        return
+    x = np.log(np.array([h['nodes_count'] for h in usable], float))
+    y = np.array([h['score'] for h in usable], float)
+    # Robust slope through pairwise medians (Theil-Sen), bounded sample for speed.
+    slopes = []
+    for i in range(len(x)):
+        for j in range(i + 1, len(x)):
+            if abs(x[j] - x[i]) > 1e-9:
+                slopes.append((y[j] - y[i]) / (x[j] - x[i]))
+    if not slopes:
+        return
+    b = float(np.median(slopes))
+    a = float(np.median(y - b * x))
+    for h in usable:
+        h['score_raw'] = h['score']
+        h['size_expected'] = a + b * np.log(h['nodes_count'])
+        h['score'] = float(h['score'] - h['size_expected'])
+
+
 def recognize_joint(alternatives, patterns, seed=6643, cap=80000, tolerance=18.,
                     top_k=8, margin=.15, shear_penalty=2., auxiliary_map=None,
                     models=('affine',), min_support=4,
                     appearance_weight=0., rank_weight=0., gap=.03, diag_top=8,
                     score_mode='binom', sigma=5., size_penalty=0., quad_share=0.,
-                    aux_weight=3., pool_by='rank'):
+                    aux_weight=3., pool_by='rank', null_mode='groups'):
     """Return (name, {query index: (x, y)}, diagnostics).
 
     `alternatives` is either a list of (x, y, score, angle, scale) candidate lists,
@@ -293,7 +334,14 @@ def recognize_joint(alternatives, patterns, seed=6643, cap=80000, tolerance=18.,
                             - r * r / (2 * sigma * sigma))
                     score = float(gain.sum()) - size_penalty * len(p)
                 else:
-                    fraction = min(.8, n_groups * np.pi * tolerance * tolerance / 9e6)
+                    # Chance that a template node lands within tolerance of *some*
+                    # pooled point. Counting query groups understates this whenever the
+                    # pool holds several alternatives per ambiguous query: measured pool
+                    # median 124 against ~32 groups, so roughly a fourfold
+                    # understatement. 'pool' uses the quantity the assignment actually
+                    # draws from.
+                    density = len(pool) if null_mode.startswith('pool') else n_groups
+                    fraction = min(.8, density * np.pi * tolerance * tolerance / 9e6)
                     surprise = -float(binom.logsf(support - min_support,
                                                   max(len(p) - 3, 1), fraction)) / np.log(10)
                     score = surprise - .5 * np.mean(res) / tolerance
@@ -311,6 +359,7 @@ def recognize_joint(alternatives, patterns, seed=6643, cap=80000, tolerance=18.,
                     score += aux_weight * (auxiliary - .5)
                 if score > best['score']:
                     best = {'name': name, 'template': p.tolist(),
+                            'nodes_count': int(len(p)),
                             'score': float(score), 'support': support,
                             'model': model, 'coverage': support / len(p),
                             'mean_residual': float(np.mean(res)), 'shear': float(shear),
@@ -321,6 +370,8 @@ def recognize_joint(alternatives, patterns, seed=6643, cap=80000, tolerance=18.,
         best.update(attempted=len(seeds), accepted=accepted, cap_hit=len(seeds) >= per_class)
         hypotheses.append(best)
 
+    if 'decorrelate' in null_mode:
+        decorrelate_size(hypotheses, min_support)
     hypotheses.sort(key=lambda h: (-h['score'], h['name']))
     if not hypotheses or hypotheses[0]['support'] < min_support:
         return 'unknown', {}, {'reason': 'no verified fit',
