@@ -1938,3 +1938,96 @@ experiment.
 Full tables, gate-by-gate results and the itemised failure analysis are in
 `EXPERIMENT4B_REPORT.md`, generated entirely from
 `outputs/exp4b_joint_solver/*.json`.
+
+---
+
+## Correction to Experiment 4B gate semantics — 2026-09-14 (dated correction,
+## not a deletion)
+
+Experiment 4B's `gates.json` counted gate 8
+(`8_joint_solver_direction_repeats_under_second_seed`) as a **pass**. Gate 8
+measured only whether the complete joint solver's scorpius regression
+reproduces across both seeds (primary: winner=ursa-minor, repeat:
+winner=ursa-major — both wrong). Repeatability of a regression is useful
+diagnostic evidence: it confirms the failure is systematic (an additive
+scale-mixing defect), not seed noise. It is **not** positive evidence for
+deployment, and must not be counted as a promotion-supporting gate. This is
+corrected here, without rewriting or deleting Exp4B's original
+`outputs/exp4b_joint_solver/gates.json` record.
+
+Recounted correctly (`outputs/exp4c_calibrated_fusion/prior_gate_corrections.json`):
+
+- **7 positive gates** (rank fidelity, held-out stability, multiple-testing
+  correction/recovery, unqueried net-rank-gain, synthetic screen, leak-free
+  membership, no scene-identity routing)
+- **6 failed gates** (template-size normalization, joint-solver scorpius
+  regression, joint-solver fails-to-fix-anything, primary/repeat
+  full-pipeline improvement, no-scene-regression floor)
+- **1 diagnostic-only check** (gate 8, reproducibility of the regression —
+  excluded from both the positive and failed counts, since it does not bear
+  on promotion either way)
+
+This does not change Experiment 4B's overall verdict: `overall_pass` was
+already `False` before this correction (8/14 originally reported, now more
+precisely 7 clearly-positive of 13 gates that actually bear on promotion,
+plus 1 non-bearing diagnostic check). Experiment 4B remains
+implementation-complete and performance-unsuccessful; this correction only
+fixes the descriptive tally, not the underlying verdict.
+
+See Experiment 4C (`EXPERIMENT4C_REPORT.md`) for the calibrated-fusion repair
+this correction and Exp4B's diagnosed additive-score-scale defect motivated.
+
+---
+
+## Experiment 4C — calibrated joint-evidence fusion (2026-09-14)
+
+Experiment 4C is implementation-complete and performance-negative. It fits
+regularized fusion weights to the exact frozen Experiment 4B placement pools,
+with whole-sky isolation, both seeds, explicit correct-placement labels,
+equal sky/class mass, deterministic duplicate removal, fold-local
+normalization, ten model arms and all required matched comparisons. Requested
+features that cannot be reconstructed from the frozen caches are named in
+`outputs/exp4c_calibrated_fusion/feature_schema.json`; they are excluded with
+missing indicators rather than silently replaced or fabricated.
+
+The training signal is extremely thin. Pisces contains one positive placement
+hypothesis per seed, Scorpius contains nine, and Taurus contains zero. The
+three corresponding wrong-placement true-class counts are 19, 11 and 20.
+Consequently, the held-out Scorpius fold trains on only the single Pisces
+positive, while no model can select a correct Taurus placement that is absent
+from the frozen pool.
+
+The predeclared complete model (`C=0.1`, robust plus matched-null features,
+class-balanced logistic fitting) chooses `eridanus` on all three held-out
+skies under both seeds. Primary true-class ranks are Pisces 15, Scorpius 10,
+Taurus 16, versus the Exp4B reference ranks 15, 1, 18; the mean worsens from
+11.33 to 13.67. Although primary/repeat coefficient cosine similarity is high
+(0.9983, 0.9952 and 0.9864 by held-out fold), the repeatably stable model is
+repeatably wrong. This is another case where reproducibility of failure is
+diagnostic evidence, not promotion evidence.
+
+The shared confidence rule rejects all three proposed overrides. It therefore
+retains Pisces and Scorpius correctly and leaves Taurus wrong as
+`serpens-caput`. Patch cells are byte-identical to Experiment 3, and official
+metrics remain exactly primary 0.8140 (presence 0.9030, localization 0.7607,
+recovery 0.9444, identification 0.6667) and repeat 0.8029 (0.8834, 0.7298,
+0.9444, 0.6667).
+
+The expanded class-disjoint synthetic screen covers all 40 references with at
+least four nodes, adds missing nodes, off-figure clutter, absent queries,
+reflection, anisotropic scale, shear, repeated queries, close-star confusers,
+and density/template-size variation. Existing recognition scores 0.225,
+Experiment 4B-style additive evidence 0.275, and complete calibrated fusion
+0.225. Removing unqueried evidence or multiplicity features also scores 0.225.
+The remaining eight two- or three-node references are explicitly
+under-determined under the screen's free-affine placement criterion. These are
+engineering results, not evidence of hidden-scene transfer.
+
+Promotion result: 12/20 gates pass and 8 fail. The method is not promoted; no
+submission was generated and nothing was uploaded. The retained pieces are
+the evaluation machinery, explicit placement labels, fold isolation,
+weighting, diagnostics and conservative fallback. The calibrated replacement
+is rejected. The next useful experiment must improve candidate and placement
+recall—especially the missing Taurus hypothesis—rather than reweighting the
+same frozen evidence again. Full details are generated from JSON in
+`EXPERIMENT4C_REPORT.md`.

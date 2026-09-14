@@ -543,3 +543,35 @@ Artifacts: `outputs/imagebench/v1/manifest.json`, `audit.json`,
   this repository's rule that a failed performance experiment must never be
   relabelled a successful method. See `EXPERIMENT4B_REPORT.md` for full
   tables and the itemised failure analysis.
+
+### Experiment 4C: calibrated joint-evidence fusion (2026-09-14)
+
+- **Retained:** leak-free hypothesis-level evaluation; correct-class plus
+  independently validated placement labels; equal sky/class weighting;
+  deterministic duplicate control; explicit missing indicators; the guarded
+  fallback that preserves the existing name unless one shared confidence rule
+  clears; and the Experiment 4B gate-semantic correction (7 positive, 6
+  failed, 1 diagnostic-only).
+- **Rejected:** the predeclared complete calibrated model (`C=0.1`, robust
+  matched-null normalization). Its raw prediction is `eridanus` for all three
+  real held-out skies on both seeds. Primary mean true-class rank worsens
+  11.33 -> 13.67. The all-pattern class-disjoint synthetic screen also favors
+  additive evidence (0.275) over calibrated fusion (0.225).
+- **Inconclusive:** requested fine-grained features absent from the frozen
+  Experiment 4B caches. They are itemized in `feature_schema.json` and were not
+  approximated after inspecting held-out results.
+- **Official retained result:** primary score 0.8140 (presence 0.9030,
+  localization 0.7607, recovery 0.9444, identification 0.6667); repeat score
+  0.8029 (0.8834, 0.7298, 0.9444, 0.6667). All patch cells are identical to
+  the corrected Experiment 3 baseline. No name changes survive the confidence
+  gate.
+- **Promotion:** 12/20 gates pass; overall false. No submission candidate was
+  generated and nothing was uploaded. Implementation completeness and method
+  promotion remain separate facts.
+- **Remaining:** Experiment 5 should target scene-adaptive correspondence and
+  candidate/hypothesis recall. Taurus has zero correct-placement hypotheses in
+  the frozen pool, so no fusion weight can recover it.
+- Artifacts: `EXPERIMENT4C_REPORT.md`,
+  `outputs/exp4c_calibrated_fusion/`,
+  `experiments/exp4c_calibrated_fusion/`, and
+  `tests/test_exp4c_calibrated_fusion.py`.

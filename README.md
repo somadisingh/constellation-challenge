@@ -233,3 +233,30 @@ Experiment 4B builds the new identification solver Experiment 4 scoped out: a ca
 **What fails:** the complete joint solver's additive composite score (appearance + geometric support + unqueried evidence) regresses scorpius from correct to wrong on both seeds — a genuine scale-mixing defect, not a bug, reported honestly rather than hidden. Integrated end to end, Phase 1's isolated rank-fidelity gain is flat on the primary seed and regresses the repeat seed (−0.0103) vs the matching fixed-policy baseline. 6 of 14 predeclared promotion gates fail; no submission candidate was generated as a result (`outputs/exp4b_joint_solver/deployment_policy.json` records `not_promoted`). **Nothing was uploaded to Kaggle.**
 
 See `EXPERIMENT4B_REPORT.md` and `outputs/exp4b_joint_solver/` for full tables, gate-by-gate results, and the failure analysis. Implementation in `experiments/exp4b_joint_solver/` (22 modules). Tests in `tests/test_exp4b_joint_solver.py` (26/26 pass); full repository suite 271/271 (.venv-exp1) and 271/271 with 62 skipped (.venv, no torch).
+
+## Experiment 4C — Calibrated Joint-Evidence Fusion
+
+**Status:** COMPLETE (implementation) | **Performance Gates:** 12/20 PASS | **Not promoted**
+
+Experiment 4C repairs Experiment 4B's additive scale mixing by fitting a
+regularized, class-balanced logistic fusion model on frozen placement
+hypotheses. It uses leave-one-whole-sky-out fitting for both seeds, explicit
+correct-class-and-placement labels, equal sky/class weights, missing-feature
+indicators, six normalization arms, ten model arms, matched ablations, and a
+class-disjoint all-pattern synthetic screen. It changes constellation names
+only; all Experiment 3 patch cells are reused exactly.
+
+The calibrated model does not transfer: its raw winner is `eridanus` for all
+three labelled skies, and mean true-class rank worsens from 11.33 to 13.67.
+The shared confidence gate rejects every override, preserving the fixed-policy
+baseline at primary **0.8140** and repeat **0.8029** with presence,
+localization, recovery, and identification exactly unchanged. On the expanded
+synthetic screen, additive evidence scores 0.275 while calibrated fusion scores
+0.225. No submission CSV was generated and nothing was uploaded.
+
+See `EXPERIMENT4C_REPORT.md` and
+`outputs/exp4c_calibrated_fusion/completion_audit.json`. Implementation is in
+`experiments/exp4c_calibrated_fusion/`; tests are in
+`tests/test_exp4c_calibrated_fusion.py`. The next justified direction is
+candidate/hypothesis recall through scene-adaptive self-supervised
+correspondence, rather than another fusion model over the same frozen pool.
