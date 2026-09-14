@@ -418,13 +418,18 @@ Artifacts: `outputs/imagebench/v1/manifest.json`, `audit.json`,
   (production defaults) on all three real labelled scenes, with explicit
   failure-mode attribution (retrieval / candidate-ranking / hypothesis-
   generation / wrong-placement / incorrect-scoring / clutter-null-model).
-- KEY FINDING: Experiment 3's own single best-candidate coordinate per query
-  (no presence filter), fed into geometry, UNDERPERFORMS the classical
-  system's own rank-1 appearance choice on ALL THREE real scenes. Exp3's
-  verifier was optimized for presence/localization reward, not for
-  appearance-rank fidelity that geometric hypothesis seeding depends on -- do
-  not substitute it for classical ranking in identification without
-  recalibration.
+- KEY FINDING (corrected 2026-09-14, see Experiment 4B below): Experiment 3's
+  own single best-candidate coordinate per query (no presence filter), fed
+  into geometry, underperforms the classical system's own rank-1 appearance
+  choice on 2 of 3 real scenes (pisces, taurus) and OUTPERFORMS it on the
+  third (scorpius: Exp3 rank 5 vs classical rank 12) -- the original claim of
+  "all three scenes" was false and is corrected in
+  `outputs/exp4b_joint_solver/prior_claim_corrections.json`. The qualitative
+  caution stands regardless: Exp3's verifier was optimized for presence/
+  localization reward, not for appearance-rank fidelity that geometric
+  hypothesis seeding depends on, so it should not be substituted for
+  classical ranking in identification without recalibration -- the direction
+  of the effect is just scene-dependent, not uniform.
 - Per-scene attribution: pisces/scorpius fail primarily at candidate-ranking
   (the correct candidate exists in the bank but does not rank first);
   taurus fails at retrieval (a figure query has no admissible candidate within
@@ -451,3 +456,90 @@ Artifacts: `outputs/imagebench/v1/manifest.json`, `audit.json`,
 - No submission candidate was generated (no new solver cleared a gate, since
   no new solver was built). Nothing uploaded to Kaggle. See
   `EXPERIMENT4_REPORT.md` for full tables.
+
+### Experiment 4B: candidate-rank fidelity, independent geometric evidence,
+### unqueried-star null model, joint multi-candidate solver (2026-09-14)
+- Motivation: Experiment 4 scoped out its own requested Phases 3-7 (a new
+  identification solver) for time reasons. Experiment 4B builds and evaluates
+  every one of those phases with real executable code, corrects Exp4's false
+  "Exp3 worse on all three scenes" claim (see above), and reports gate-by-gate
+  performance honestly rather than reframing a mixed/negative result as a
+  success.
+- Phase 1 (`rank_features.py`/`rank_fusion.py`/`rank_fidelity.py`): 7 fixed
+  ranking rules, leave-one-sky-out x 2 seeds. `5_linear_score_fusion`
+  (standardized classical NCC + Exp3 pair logit) wins, mean top1_reward 0.8267
+  vs classical-only 0.7863 and Exp3-only 0.8170 -- a genuine, isolated
+  candidate-rank-fidelity gain.
+- Phase 2 (`independent_scorer.py`/`independent_support.py`): a held-out-
+  support scorer that excludes the seed correspondences used to FIT each
+  hypothesis's affine transform from its own support count -- the existing
+  `recognize_joint`'s `support = len(pairs)` does not do this, since
+  `assignment` matches the full mapped template including the seed nodes
+  themselves. `held_out_stability` (tie-break by transform stability under
+  bounded coordinate jitter) improves true-class rank on pisces (15->8) and
+  taurus (18->11) without regressing scorpius. Template-size normalization via
+  `constellation.joint.decorrelate_size` (reused verbatim, previously found
+  helpful elsewhere in this repo) REGRESSES both pisces (15->39) and taurus
+  (18->29) in this real held-out-support test -- a genuine negative result
+  worth flagging since it contradicts the primitive's usual direction.
+- Phase 3 (`unqueried_star_evidence.py`/`null_model.py`): multi-scale DoG
+  search at predicted-but-unqueried reference nodes, scored against matched
+  null positions (same radial-offset band, not a fixed threshold).
+  Uncorrected raw-count evidence BREAKS an already-correct scene (scorpius,
+  rank 1->11) -- a real demonstration that uncorrected auxiliary evidence
+  search is actively dangerous, not merely unhelpful. A sqrt(n_searched)
+  multiple-testing correction (dividing the summed z-score evidence by the
+  number of unqueried nodes searched, so a larger template does not win
+  purely from having more chances to find a clutter peak -- the exact
+  large-template bias already documented above as a +0.660 wrong-class
+  score-vs-node-count correlation) recovers scorpius exactly (rank->1).
+  Corrected evidence also improves pisces's rank (15->6) but never flips its
+  winner to the true class; taurus is unchanged (18->18).
+- Phase 4 (`joint_solver.py`/`joint_solver_comparisons.py`): a bounded,
+  deterministic beam search (`SolverState`: class, affine transform, query/
+  node assignments, absent/off-figure flags, full score decomposition) over
+  class/hypothesis pairs, additive composite score (appearance + held-out
+  geometric support + unqueried evidence - clutter penalty). 10 matched
+  comparisons x 3 scenes x 2 seeds. KEY NEGATIVE FINDING: the complete
+  composite solver regresses scorpius from correct to wrong on BOTH seeds
+  (primary: ursa-minor, repeat: ursa-major) and fixes none of the previously-
+  wrong scenes. Diagnosis: the unqueried z-score-sum term and the geometric-
+  support counts are not on a common numeric scale, and no learned/
+  calibrated combination weight was used for this pass -- an explicit design
+  choice, reported here as the experiment's largest limitation rather than
+  hidden or reweighted after the fact.
+- Phase 5 (`full_evaluation.py`/`synthetic_screen.py`): Phase 1's rank-fusion
+  rule integrated end to end (presence calibration + Exp2 geometry snap/
+  rescue), leak-free fixed-arm-F, both seeds. Primary seed flat (0.8141 vs
+  matching baseline 0.8140); repeat seed REGRESSES (0.7926 vs 0.8029,
+  -0.0103). Root cause: the presence calibrator and Exp2's snap/rescue
+  thresholds were tuned against the classical-only rank-1 score distribution;
+  changing which candidate is rank-1 (Phase 1's whole point) shifts that
+  distribution without the downstream thresholds being retuned to match --
+  the same failure mode already documented above for `lab/tiebreak.py`'s
+  ranking-replacement result. 60-scene synthetic class-disjoint screen: small
+  positive delta (existing_recognize 0.367 -> independent_scorer 0.400),
+  explicitly labelled a synthetic engineering screen, not real-scene
+  evidence; pattern-order independence confirmed identical.
+- Promotion gates: 8/14 predeclared gates pass (rank fidelity, held-out
+  stability, multiple-testing correction/recovery, unqueried net-rank-gain,
+  joint-solver reproducibility, synthetic screen, leak-free membership, no
+  scene-identity routing). 6 fail (template-size normalization, joint-solver
+  scorpius regression, joint-solver fails-to-fix, primary/repeat full-
+  pipeline improvement, no-scene-regression). See `gates.json` for the
+  itemised evidence behind each.
+- No submission candidate was generated
+  (`outputs/exp4b_joint_solver/deployment_policy.json` records
+  `not_promoted`); the currently deployed system (Exp3 verifier + Exp2
+  geometry) is unchanged. Nothing uploaded to Kaggle.
+- Tests: 26/26 new Exp4B tests pass; full repository suite 271/271
+  (`.venv-exp1`) and 271/271 with 62 skipped (`.venv`, no torch) -- no
+  regressions. Integrity: 1158 protected files checked (constellation/, lab/,
+  run.py, outputs/joint_train, outputs/joint_submission, outputs/exp1*,
+  outputs/exp2_geometry, outputs/exp3_pairwise, outputs/exp4_joint_identification,
+  and the corresponding source packages), 0 changed/missing/new.
+  `completion_audit.json`: implementation_complete=True (18/18 checks pass),
+  performance_gates_passed=False (8/14) -- reported as separate facts per
+  this repository's rule that a failed performance experiment must never be
+  relabelled a successful method. See `EXPERIMENT4B_REPORT.md` for full
+  tables and the itemised failure analysis.

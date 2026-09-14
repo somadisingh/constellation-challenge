@@ -216,8 +216,20 @@ The corrected Experiment 3 submission scored ~0.64 on Kaggle despite a local hea
 
 **Leak-free fixed-policy result:** 0.8208 (`verifier_snap_rescue`, both seeds ensembled) — comparable to, not below, the oracle-selected-arm headline; both are legitimate but different systems, reported side by side.
 
-**Key finding:** Experiment 3's own best-candidate coordinate, fed into geometry with no presence filter, **underperforms the classical system's own rank-1 appearance choice on all three real scenes** — the verifier was optimized for presence/localization reward, not appearance-rank fidelity, and should not be substituted for classical ranking in identification without recalibration.
+**Key finding (corrected by Experiment 4B — see below):** Experiment 3's own best-candidate coordinate, fed into geometry with no presence filter, underperforms the classical system's own rank-1 appearance choice on 2 of 3 real scenes (pisces, taurus) and outperforms it on the third (scorpius, exp3 rank 5 vs classical rank 12) — the direction is scene-dependent, not uniform across all three scenes as originally reported here. See `outputs/exp4b_joint_solver/prior_claim_corrections.json` for the full correction.
 
 Phases 3–7 (a new independent-evidence identification solver, joint beam-search assignment, a 9-feature local-geometry screen, a generative degradation-model verifier, and a plate-solving probe) were not implemented this pass; see `outputs/exp4_joint_identification/scope_decision.json` for the itemised reason for each. No new solver was built, so no promotion gate applies and no submission candidate was generated. **Nothing was uploaded to Kaggle.**
 
 See `EXPERIMENT4_REPORT.md` and `outputs/exp4_joint_identification/` for full tables. Implementation in `experiments/exp4_joint_identification/`. Tests in `tests/test_exp4_joint_identification.py` (22/22 pass); full repository suite 244/244.
+
+## Experiment 4B — Candidate-Rank Fidelity, Independent Geometric Evidence and Joint Constellation Identification
+
+**Status:** COMPLETE (implementation) | **Promotion Gates:** 8/14 PASS (`outputs/exp4b_joint_solver/completion_audit.json`, `gates.json`)
+
+Experiment 4B builds the new identification solver Experiment 4 scoped out: a candidate-rank-fidelity comparison (7 fixed rules, leave-one-sky-out x 2 seeds), an independent seed-excluded/held-out geometric hypothesis scorer, an unqueried-star DoG-evidence search with a matched-null, multiple-testing-corrected score, and a bounded deterministic joint multi-candidate beam-search solver combining all three. Every phase has executable code and real, measured results, whether or not it clears its own performance gate (implementation completeness and performance success are tracked as separate fields).
+
+**What works:** linear score-fusion of classical NCC + Exp3's pair logit genuinely improves isolated candidate-rank fidelity (mean top1_reward 0.7863 → 0.8267). A stability tie-break on held-out geometric support improves true-class rank on the two harder real scenes (pisces 15→8, taurus 18→11) without regressing the easy one. The sqrt(n) multiple-testing correction on unqueried-star evidence is necessary to prevent a real regression: uncorrected evidence breaks an already-correct scene (scorpius, rank1→11), and the correction recovers it.
+
+**What fails:** the complete joint solver's additive composite score (appearance + geometric support + unqueried evidence) regresses scorpius from correct to wrong on both seeds — a genuine scale-mixing defect, not a bug, reported honestly rather than hidden. Integrated end to end, Phase 1's isolated rank-fidelity gain is flat on the primary seed and regresses the repeat seed (−0.0103) vs the matching fixed-policy baseline. 6 of 14 predeclared promotion gates fail; no submission candidate was generated as a result (`outputs/exp4b_joint_solver/deployment_policy.json` records `not_promoted`). **Nothing was uploaded to Kaggle.**
+
+See `EXPERIMENT4B_REPORT.md` and `outputs/exp4b_joint_solver/` for full tables, gate-by-gate results, and the failure analysis. Implementation in `experiments/exp4b_joint_solver/` (22 modules). Tests in `tests/test_exp4b_joint_solver.py` (26/26 pass); full repository suite 271/271 (.venv-exp1) and 271/271 with 62 skipped (.venv, no torch).

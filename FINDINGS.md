@@ -1800,3 +1800,141 @@ actively harmful for this purpose. Separately, taurus's retrieval-level
 failure (a real gap in the frozen candidate bank, not a ranking problem)
 would require improving the classical retrieval/verification stage itself,
 which is outside this experiment's scope.
+
+
+---
+
+## Correction to Experiment 4 — 2026-09-14 (dated correction, not a deletion)
+
+Experiment 4's report and this file's Experiment 4 section stated that
+"Experiment 3's verifier output is currently a WORSE identification-time
+appearance signal than the classical system's own ranking" and that level 6
+(`exp3_fixed_policy`) "underperforms level 5 (`c0_rank1`) ... on all three
+scenes." **This is false for scorpius** and is corrected here per this
+repository's rule that a factual error must be recorded with its correction,
+not silently rewritten.
+
+Re-reading `outputs/exp4_joint_identification/headroom_oracles.json` directly
+(no new computation; the artifact was already correct, only its prose summary
+was wrong):
+
+| Scene | Exp3 true-class rank | Classical true-class rank | Which is better |
+|---|---:|---:|---|
+| pisces | 24 | 5 | classical |
+| scorpius | 5 | 12 | **Exp3** |
+| taurus | 13 | 11 | classical |
+
+The corrected statement: Exp3's raw best-candidate coordinate, used as a
+single-point identification signal with no presence filter, is worse than
+classical rank-1 on 2 of 3 real scenes (pisces, taurus) and **better** on 1 of
+3 (scorpius). The direction is scene-dependent, not uniformly worse. This
+correction is recorded in full, with verification method, in
+`outputs/exp4b_joint_solver/prior_claim_corrections.json`.
+
+**Scope clarification:** Experiment 4's `completion_audit.json` reporting
+`COMPLETE` is accurate only for the reduced phase set it actually implemented
+(baseline reconstruction, leak-free fixed-policy evaluation, and the
+identification-headroom oracle ladder — the task's own Phases 0–2). It never
+attempted a new identification solver, joint multi-candidate assignment,
+independent-evidence scorer, unqueried-star null model, or feature screen,
+because none of those were built in that pass. That verdict must not be read
+as "Experiment 4's full originally-requested roadmap is complete" — it is
+not, and no new solver or submission candidate was produced by Experiment 4.
+
+**Additional verified clarification:** Exp3's presence calibration
+(`experiments.exp3_pairwise.calibration.apply_calibrator`) is a single
+monotonic (sigmoid-of-linear) function applied per-candidate-row; it cannot
+reorder candidates within one query's own slate, only rescale absolute
+probabilities for the presence threshold. Verified empirically (see the
+correction JSON) by simulating a 3-candidate slate and confirming the raw-score
+argsort and calibrated-probability argsort are identical. Any candidate-rank
+difference between classical and Exp3 traces to the underlying score (NCC vs
+pair-logit), never to calibration.
+
+See Experiment 4B (`EXPERIMENT4B_REPORT.md`) for the follow-on work this
+correction motivated: a candidate-rank-fidelity experiment, independent
+geometric evidence scoring, unqueried-star clutter modeling, and a bounded
+joint multi-candidate solver.
+
+---
+
+## Experiment 4B: Candidate-Rank Fidelity, Independent Geometric Evidence and
+## Joint Constellation Identification — 2026-09-14
+
+**Status:** COMPLETE (implementation) | **Promotion gates:** 8/14 PASS
+(`outputs/exp4b_joint_solver/gates.json`, `completion_audit.json`).
+Implementation completeness and performance-gate success are tracked as
+separate fields; every phase below has executable code and real, measured
+results, whether or not it clears its own gate.
+
+**Phase 1 (candidate-rank fidelity):** 7 fixed rules, leave-one-sky-out x 2
+seeds. `5_linear_score_fusion` (standardized classical NCC + Exp3 pair logit)
+wins with mean top1_reward 0.8267, beating classical-only (0.7863) and
+Exp3-only (0.8170). Genuine, isolated positive result (gate 1 PASS).
+
+**Phase 2 (independent geometric evidence):** a held-out-support scorer that
+excludes the seed correspondences used to fit each hypothesis's affine
+transform from its own support count (the existing `recognize_joint` does
+not do this). `held_out_stability` (tie-break by transform stability under
+bounded coordinate jitter) improves true-class rank on pisces (15→8) and
+taurus (18→11) without regressing scorpius (gate 2 PASS). Template-size
+normalization via `constellation.joint.decorrelate_size` (reused verbatim)
+REGRESSES both pisces (15→39) and taurus (18→29) — a real negative result
+against a primitive this repo elsewhere finds helpful (gate 3 FAIL).
+
+**Phase 3 (unqueried-star evidence + null model):** multi-scale DoG search
+for real sources at predicted-but-unqueried reference nodes, scored against
+matched null positions. Uncorrected raw-count evidence actively BREAKS an
+already-correct scene (scorpius, rank 1→11); the sqrt(n) multiple-testing
+correction recovers it exactly (rank→1, gate 4 PASS). Corrected evidence
+improves pisces's rank (15→6) but never flips its winner to the true class
+(gate 5 PASS on rank improvement; the winner-flip requirement is gate 7,
+which fails at the joint-solver level below); taurus is unchanged (18→18).
+
+**Phase 4 (joint multi-candidate beam solver):** a bounded, deterministic
+beam search (`SolverState` dataclass: class, transform, query/node
+assignments, absent/off-figure flags, full score decomposition) over
+class/hypothesis pairs, scored by an additive composite of appearance +
+held-out geometric support + unqueried evidence − clutter penalty. 10 matched
+comparisons x 3 scenes x 2 seeds. **The complete composite solver regresses
+scorpius from correct to wrong on BOTH seeds** (primary: ursa-minor, repeat:
+ursa-major — a reproducible finding, gate 8 PASS, but the regression itself
+is gate 6 FAIL) and fixes none of the previously-wrong scenes (gate 7 FAIL).
+Diagnosis: the unqueried z-score-sum term and the geometric-support counts
+are not on a common numeric scale, and no learned/calibrated combination
+weight was used — an explicit design choice, not an oversight, reported here
+as the experiment's largest genuine limitation rather than hidden or
+re-weighted after the fact to mask it.
+
+**Phase 5 (full whole-sky evaluation + synthetic screen):** Phase 1's
+rank-fusion rule integrated end to end with presence calibration and Exp2's
+geometry snap/rescue, leak-free fixed-arm-F, both seeds. Primary seed is flat
+(0.8141 vs matching baseline 0.8140); **repeat seed regresses** (0.7926 vs
+0.8029, −0.0103; gates 9/10 FAIL). Per-scene deltas show primary
+pisces/scorpius and repeat pisces exceeding the 0.02 regression floor (gate
+11 FAIL). Root cause: the presence calibrator and Exp2's snap/rescue
+thresholds were tuned against the classical-only rank-1 score distribution;
+changing which candidate is rank-1 (Phase 1's whole point) shifts that
+distribution without the downstream thresholds being retuned to match — the
+same failure mode already documented elsewhere in this file for a different
+rank-changing change. The 60-scene synthetic class-disjoint screen shows a
+small positive delta (existing_recognize 0.367 → independent_scorer 0.400,
+gate 12 PASS) but is explicitly labelled a synthetic engineering screen, not
+real-scene evidence.
+
+**Net result:** 8 of 14 predeclared promotion gates pass. No submission
+candidate was generated (`outputs/exp4b_joint_solver/deployment_policy.json`
+records `not_promoted`); the currently deployed system (Experiment 3's
+verifier + Experiment 2's geometry integration) is unchanged.
+**Nothing was uploaded to Kaggle.**
+
+**Single most promising next step** (not attempted this pass): learn the
+joint solver's combination weights by logistic regression on allowed-sky
+evidence, exactly as Phase 1's rank fusion and Exp3's presence calibrator
+already do — this directly targets the diagnosed scale-mixing cause of the
+scorpius regression, the largest and most reproducible failure in the
+experiment.
+
+Full tables, gate-by-gate results and the itemised failure analysis are in
+`EXPERIMENT4B_REPORT.md`, generated entirely from
+`outputs/exp4b_joint_solver/*.json`.
