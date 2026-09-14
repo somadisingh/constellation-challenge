@@ -1186,3 +1186,42 @@ rendered identification gain, audit figure candidate coverage and whether a stor
 true-class fit is actually at the true placement; having a true-class label somewhere
 in a slate does not imply the correct transformation was recovered. Broader catalogue
 coverage and improved image realism remain necessary for generalization claims.
+
+---
+
+# Experiment 2 — learned evidence in geometric recovery, September 14, 2026
+
+**Outcome: a submission candidate, not a production replacement.** Experiment 1B's
+learned matcher has complementary errors to C0: it raises presence and ordinary
+localization but loses the geometric relocations responsible for C0's recovery. A fixed
+support-gated integration now uses learned presence and coordinates by default, snaps a
+learned-present query to C0 only when the production recognizer independently relocated
+that query, and rescues a learned-absent query under the same condition. It keeps C0's
+constellation winner.
+
+| configuration | total | presence | localization | recovery | id |
+|---|---:|---:|---:|---:|---:|
+| C0 | .728688 | .717316 | .649573 | .877778 | .666667 |
+| Experiment 1B learned | .721428 | .906413 | .724122 | .600000 | .666667 |
+| support-gated hybrid | **.761959** | .865213 | .686610 | .833333 | .666667 |
+| same rule, seed 31005 | **.751275** | .873095 | .692783 | .777778 | .666667 |
+
+The primary gain over C0 is +.033271 and the repeat-seed gain is +.022587. Pisces and
+Scorpius improve; Taurus regresses by .05949. This passes the declared bounded gate but
+is still development evidence from three repeatedly used skies. The rule was selected
+from the causal primary-development comparison and then frozen for the seed repeat; the
+primary result is not an untouched selection estimate.
+
+A stricter candidate-level experiment maps HardNet scores to every production refined
+and coarse candidate, while keeping classical presence eligibility, ambiguity, pool
+membership and hypothesis seed coordinates fixed. All 3,980 mappings are exact at 0px.
+Learned within-query rank penalties of 0.05–0.40 change no primary-seed prediction; the
+largest weight changes the repeat seed and regresses. That rank term is rejected. The
+gain comes from combining learned presence/localization with independently verified C0
+relocations, not from reweighting constellation hypotheses.
+
+Implementation: `experiments/exp2_geometry/`; machine record:
+`outputs/exp2_geometry/record.json`; full report: `EXPERIMENT2_REPORT.md`. All 140 tests
+pass and every protected computational artifact is byte-identical. The only changes in
+the inherited 330-file protected set are the intentional `README.md` and `FINDINGS.md`
+updates. No Kaggle submission was modified.

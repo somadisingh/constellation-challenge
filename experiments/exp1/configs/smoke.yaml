@@ -1,0 +1,14 @@
+# Tiny budgets to exercise every code path in the plan §10 schedule.
+# Not a scientific configuration: results from this file are meaningless.
+train:
+  screen_steps: 20
+  max_steps: 30
+  min_steps: 10
+  eval_every: 10
+  warmup_random_steps: 5
+  checkpoint_every: 10
+pair_head:
+  max_steps: 20
+  eval_every: 10
+mining:
+  refresh_step: 15

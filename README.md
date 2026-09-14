@@ -149,6 +149,14 @@ The source hash is now `e61c9e31...`, moved from `8580ec0c...` by configuration 
 
 `constellation/slate.py` splits the three jobs a candidate ordering used to conflate. `calib` decides presence, ambiguity and the pool margin; `rank` decides pool ordering and the reported coordinate; `seed` decides the physical-star grouping anchor and the geometric hypothesis seed. `recognize_joint` accepts raw candidate lists, in which case all three collapse onto the single appearance score and the shipped behaviour is reproduced exactly, or `QuerySlate` objects carrying them separately. `build_pool(..., pool_by='calib')` fixes pool membership so that only ordering changes, which is what makes a ranking experiment attributable.
 
+`experiments/exp2_geometry/` integrates the frozen Experiment 1B matcher with recovery.
+Its fixed rule uses learned presence/localization by default and adopts or rescues a C0
+coordinate only for a query independently supported by C0's relocation map. It scores
+0.761959 out of fold (+0.033271 over C0) and 0.751275 with the repeated training seed.
+Candidate-level learned rank scoring was also tested under fixed pools and seed anchors;
+it is rejected because it is inert on the primary seed and harmful at its largest weight
+on the repeat. See `EXPERIMENT2_REPORT.md` and `outputs/exp2_geometry/record.json`.
+
 This exists because a factorial over seeds and ranking showed the earlier re-ranking failures were **seed disruption**: changing seed anchors drops the true class from rank 0 to rank 1, while changing the ranking alone costs only off-figure localization. `constellation/reloc.py` adds relocation guards on the same footing, including one that refits the winning transform with a query's whole physical-star group held out. Neither mechanism improved the weighted objective, so production uses the default policy for both; see the third-pass section of `FINDINGS.md`.
 
 ## Image-level benchmark — Workstream 2

@@ -1,0 +1,115 @@
+# Experiment 1 defaults. Every value here is frozen before outer folds are opened.
+# Changing anything under `protocol`, `augment`, `pose` or `train` invalidates all
+# derived caches, because the code hash and this config both enter every cache key.
+
+protocol:
+  scenes: [pisces, scorpius, taurus]
+  inset: 96
+  grid: 3
+  fit_cells: [0, 1, 2, 3, 4, 5]
+  val_cells: [6, 7]
+  synthcal_cells: [8]
+  margin: 72
+  footprint: 96
+  min_spacing: 8.0
+  source_targets:
+    fit: 20000
+    val: 2000
+    synthcal: 1000
+  mixture:
+    peak: 0.50
+    uniform: 0.25
+    background: 0.25
+
+seeds:
+  sampling: 31001
+  inner_eval: 31002
+  augment: 31003
+  model: 31004
+  model_second: 31005
+
+pose:
+  angle_trials: [-10.0, 0.0, 10.0]
+  scale_trials: [0.9, 1.0, 1.1]
+  support_radius: 15.5
+  aa_factor: 0.5
+  classical_blur: 0.6
+
+augment:
+  oversample: 1.5
+  rotation: [0.0, 360.0]
+  scale_log: [0.75, 1.33]
+  blur_sigma: [0.3, 1.2]
+  gain: [0.75, 1.25]
+  offset: [-12.0, 12.0]
+  drift: [0.0, 10.0]
+  read_noise: [0.5, 5.0]
+  shot_alpha: [0.0, 0.05]
+  jpeg_none_prob: 0.5
+  jpeg_quality: [80, 100]
+  max_degenerate_fraction: 0.10
+
+mining:
+  queries_per_sky: 200
+  hard_per_query: 8
+  random_per_query: 2
+  ignore_radius: 36.0        # positions within this of truth are ignored, not negative
+  positive_radius: 4.0
+  refresh_step: 4000
+  mix:
+    classical_hard: 0.50
+    network_hard: 0.25
+    random: 0.25
+
+train:
+  device: mps
+  anchors_per_step: 64
+  screen_steps: 2000
+  max_steps: 8000
+  min_steps: 3500
+  eval_every: 500
+  warmup_random_steps: 500
+  early_stop_patience: 3
+  margin: 0.5
+  distance_eps: 1.0e-6
+  optimizer: adamw
+  lr_pretrained: 1.0e-4
+  lr_scratch: 3.0e-4
+  weight_decay: 1.0e-4
+  lr_min: 1.0e-6
+  lr_warmup_steps: 200
+  grad_clip: 5.0
+  freeze_bn_pretrained: true
+  checkpoint_every: 500
+  precision: fp32
+
+pair_head:
+  dim: 128
+  dropout: 0.1
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  max_steps: 2000
+  eval_every: 250
+  hard_fraction: 0.5
+
+inner_eval:
+  queries_per_sky: 128
+  present_fraction: 0.5
+
+calibration:
+  features: [best_match_score, best_minus_second_score]
+  regularization: 0.5        # 0.5*||w||^2 with an unpenalised intercept
+  thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+               0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+
+integration:
+  member_radius: 18.0
+  identification: frozen_classical
+
+gates:
+  min_mean_gain_over_c0: 0.01
+  require_positive_over_c1: true
+  max_per_scene_regression: 0.02
+
+cache:
+  ceiling_gib: 15.0

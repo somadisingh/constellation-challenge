@@ -1,5 +1,6 @@
 # Local environment and caches
 .venv/
+.venv-exp1/
 __pycache__/
 *.py[cod]
 .DS_Store
@@ -29,3 +30,6 @@ __pycache__/
 .env.*
 !.env.example
 kaggle.json
+
+
+/cnn/
