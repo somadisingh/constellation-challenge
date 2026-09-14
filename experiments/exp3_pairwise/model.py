@@ -176,6 +176,22 @@ class PairwiseVerifier(nn.Module):
         if offset:
             self.offset_head = OffsetHead(in_dim=feat_dim)
 
+    def train(self, mode: bool = True):
+        """Keep the frozen HardNet submodule in eval mode regardless of `mode`.
+
+        `nn.Module.train()` recurses into every registered submodule, so a plain
+        `model.train()` before the training loop would otherwise flip HardNet's
+        BatchNorm back into training mode and let its running statistics drift on
+        every forward pass, even though its parameters never receive a gradient
+        (`hardnet_descriptors` also wraps the call in `torch.no_grad()`). Both
+        guards are independently necessary: no_grad stops weight updates, this
+        override stops BatchNorm buffer drift.
+        """
+        super().train(mode)
+        if self.hardnet is not None:
+            self.hardnet.eval()
+        return self
+
     def hardnet_descriptors(self, x: torch.Tensor) -> torch.Tensor:
         """Encode 32x32 crops with the frozen backbone. No gradient reaches it."""
         with torch.no_grad():

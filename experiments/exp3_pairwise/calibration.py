@@ -126,13 +126,13 @@ def select_threshold(probs: np.ndarray, rows: list,
     return {'grid': table, 'selected': best['threshold']}
 
 
-def select_offset_gate(rows: list, oracle_dx, oracle_dy) -> dict:
+def select_offset_gate(rows: list) -> dict:
     """Grid search over (confidence threshold, max applied correction), task §12.
 
     `rows` must carry `offset_dx`, `offset_dy`, `offset_confidence`, `best_xy`,
-    `truth_xy` for present rows with a positive best candidate. `oracle_dx/dy` are
-    the true residuals (truth - best_xy) used only to score candidate settings;
-    they never enter the applied correction itself.
+    `truth_xy` for present rows with a positive best candidate. The true residual
+    `truth_xy - best_xy` is recomputed here only to SCORE candidate settings; it
+    never enters the applied correction, which uses only the predicted offset.
     """
     present = [r for r in rows if r['present'] and r.get('offset_dx') is not None
               and r.get('error_distance') is not None]

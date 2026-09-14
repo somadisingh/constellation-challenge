@@ -3,10 +3,19 @@ import copy
 import numpy as np
 import unittest
 from unittest.mock import patch
-import torch
+try:
+    import torch
+    HAVE_TORCH = True
+except ImportError:
+    # torch is not installed in the production .venv (Python 3.14); the two
+    # tests below that need it are individually skipped rather than failing
+    # the whole module's collection at import time.
+    torch = None
+    HAVE_TORCH = False
 from experiments.exp1b.stream import choose_indices,eligible,IGNORE,AnchorStream,NegativePool
 from experiments.exp1b.data import generate,local_context,valid_source,source_weights,stats,OUT,OLD
-from experiments.exp1b.train import select_negative_distance
+if HAVE_TORCH:
+    from experiments.exp1b.train import select_negative_distance
 from experiments.exp1.splits import cell_box,partition_records
 from experiments.exp1.pose import sample_query_frame,query_to_source,aligned_candidate
 from experiments.exp1.env import read_json,pin_threads
@@ -28,6 +37,7 @@ def test_hard_sources_are_distinct_and_hard():
 def test_ambiguity_mask():
     assert eligible([[0,0],[36,0],[72,0],[73,0]],[0,0]).tolist()==[False,False,False,True]
 
+@unittest.skipUnless(HAVE_TORCH, 'torch not available in this environment')
 def test_random_loss_has_no_hidden_hardest_selection():
     d=torch.tensor([[.1,.7,1.],[.9,.3,.6]])
     ids=torch.tensor([2,0]);assert torch.allclose(select_negative_distance(d,True,ids),torch.tensor([1.,.9]))
@@ -81,6 +91,7 @@ def test_d_e_have_identical_anchors_despite_different_loss():
     assert len(a.uses)>400 and a.replayed>0
     assert a.stats()['nonzero_loss_presentations']>0 and b.stats()['nonzero_loss_presentations']==0
 
+@unittest.skipUnless(HAVE_TORCH, 'torch not available in this environment')
 def test_pool_refresh_introduces_locations():
     import experiments.exp1b.stream as streammod
     # Small real source subset and lightweight deterministic encoder keep this a

@@ -29,34 +29,67 @@ WEIGHT_DECAY = 1e-4
 OFFSET_WEIGHT = 0.1
 
 
+def _trainable_state_dict(model) -> dict:
+    """State dict EXCLUDING the frozen HardNet submodule.
+
+    The frozen backbone must never be part of an Exp3 checkpoint: saving it would
+    let a later `load_state_dict` on a freshly loaded (and therefore correctly
+    un-drifted) `hardnet_model` instance silently overwrite it with whatever that
+    checkpoint captured, defeating the frozen-backbone guarantee on resume.
+    """
+    return {k: v for k, v in model.state_dict().items() if not k.startswith('hardnet.')}
+
+
+def _load_trainable_state_dict(model, state: dict) -> None:
+    """Load a trainable-only checkpoint; the only expected missing keys are HardNet's."""
+    result = model.load_state_dict(state, strict=False)
+    unexpected_missing = [k for k in result.missing_keys if not k.startswith('hardnet.')]
+    if unexpected_missing or result.unexpected_keys:
+        raise RuntimeError(f'checkpoint mismatch: missing={unexpected_missing} '
+                           f'unexpected={result.unexpected_keys}')
+
+
 def build_model(arm: str, hardnet_backbone=None) -> PairwiseVerifier:
     spec = ARM_SPEC[arm]
     return PairwiseVerifier(hardnet_fusion=spec['hardnet_fusion'],
                             offset=spec['offset'], hardnet_backbone=hardnet_backbone)
 
 
-def _resample_group_negatives(group, spec: dict, network_scores=None,
-                              hardnet_sim=None):
+def _resample_group_negatives(group, spec: dict, seed: int, refresh_generation: int,
+                              network_scores=None, hardnet_sim=None):
     """Restrict `group`'s stored candidates to positives + selected negatives.
 
     Every arm's classification loss should see the same SIZE of candidate set
     regardless of policy, so hard and random controls are directly comparable: the
     ignored-band and unselected-negative candidates are masked out of `valid`,
     while every positive candidate stays.
+
+    `seed`/`refresh_generation` make the negative choice deterministic and
+    reproducible across processes and resumed runs (task §5.1 repair): they are
+    threaded straight through to `negatives.select_hard`/`select_random`, which
+    derive an RNG via `derive_seed` rather than Python's process-salted `hash()`.
     """
     if spec['negatives'] == 'hard':
-        sel = select_hard(group, network_scores=network_scores, hardnet_sim=hardnet_sim)
+        sel = select_hard(group, seed=seed, refresh_generation=refresh_generation,
+                          network_scores=network_scores, hardnet_sim=hardnet_sim)
     else:
-        sel = select_random(group)
+        sel = select_random(group, seed=seed, refresh_generation=refresh_generation)
     keep = set(sel['indices'].tolist()) | set(group.positive_indices().tolist())
     mask = np.zeros(len(group), bool)
     mask[list(keep)] = True
     return mask, sel
 
 
-def build_training_batch(groups: list, spec: dict, hardnet_model=None,
+def build_training_batch(groups: list, spec: dict, seed: int = 0,
+                         refresh_generation: int = 0, hardnet_model=None,
                          device: str = 'cpu', network_model=None) -> tuple:
-    """Collate `groups`, restricting each group's valid candidates per `spec`."""
+    """Collate `groups`, restricting each group's valid candidates per `spec`.
+
+    `seed`/`refresh_generation`: see `_resample_group_negatives`. A caller that
+    omits `seed` gets `seed=0`, which is still fully deterministic (just not tied
+    to a particular experiment run) -- every production call site in this package
+    passes the real run seed explicitly.
+    """
     kmax = max((len(g) for g in groups), default=1) or 1
     restricted_valid = []
     diagnostics = []
@@ -67,7 +100,8 @@ def build_training_batch(groups: list, spec: dict, hardnet_model=None,
         network_scores = None
         if spec['negatives'] == 'hard' and network_model is not None:
             network_scores = network_model(g)
-        mask, sel = _resample_group_negatives(g, spec, network_scores, hardnet_sim)
+        mask, sel = _resample_group_negatives(g, spec, seed, refresh_generation,
+                                              network_scores, hardnet_sim)
         restricted_valid.append(mask & g.admissible)
         diagnostics.append(sel)
     batch = collate(groups, kmax=kmax)
@@ -138,12 +172,14 @@ def train_arm(fold: str, arm: str, groups_by_step, hardnet_model, device: str,
         frozen_state = {k: v.detach().clone() for k, v in hardnet_model.state_dict().items()}
 
     history, evaluations = [], []
-    best = {'metric': -np.inf, 'step': None}
+    best = {'metric': -np.inf, 'selection_metric': -np.inf, 'step': None,
+           'presence': None, 'localization': None, 'top1_correct': None,
+           'calibrator': None, 'threshold': None, 'per_scene': None}
     start_step = 0
     ckpt_path = (checkpoint_dir / 'last.pt') if checkpoint_dir else None
     if resume and ckpt_path and ckpt_path.exists():
         blob = torch.load(ckpt_path, map_location=device, weights_only=False)
-        model.load_state_dict(blob['model'])
+        _load_trainable_state_dict(model, blob['model'])
         opt.load_state_dict(blob['optimizer'])
         start_step = blob['step']
         history, evaluations, best = blob['history'], blob['evaluations'], blob['best']
@@ -151,10 +187,16 @@ def train_arm(fold: str, arm: str, groups_by_step, hardnet_model, device: str,
 
     started = time.perf_counter()
     nan_steps = 0
+    negative_digests = []
     for step in range(start_step, steps):
         groups = groups_by_step(step)
-        batch, _ = build_training_batch(groups, spec, hardnet_model=hardnet_model,
-                                        device=device)
+        batch, diagnostics = build_training_batch(groups, spec, seed=seed,
+                                                   refresh_generation=0,
+                                                   hardnet_model=hardnet_model,
+                                                   device=device)
+        if step % 20 == 0 or step + 1 == steps:
+            negative_digests.append({'step': step + 1,
+                                     'digests': [d.get('digest') for d in diagnostics]})
         result = compute_loss(model, batch, spec, device)
         if not result['finite']:
             nan_steps += 1
@@ -179,10 +221,22 @@ def train_arm(fold: str, arm: str, groups_by_step, hardnet_model, device: str,
             evaluations.append({'step': step + 1, 'metric': metric, **metric_doc})
             improved = metric > best['metric'] + 1e-9
             if improved:
-                best = {'metric': metric, 'step': step + 1}
+                # Repair task §3.4: `best` is now ONE atomic record built entirely
+                # from THIS SAME `metric_doc` -- step, selection_metric, presence,
+                # localization, top1_correct, calibrator and threshold can never
+                # be pulled from a later, unrelated evaluation, because they are
+                # all read out of the identical dict that triggered `improved`.
+                best = {'step': step + 1, 'selection_metric': metric,
+                       'metric': metric,   # back-compat alias, same value
+                       'presence': metric_doc.get('presence'),
+                       'localization': metric_doc.get('localization'),
+                       'top1_correct': metric_doc.get('top1_correct'),
+                       'calibrator': metric_doc.get('calibrator'),
+                       'threshold': metric_doc.get('threshold'),
+                       'per_scene': metric_doc.get('per_scene')}
                 if checkpoint_dir:
-                    torch.save({'model': model.state_dict(), 'step': step + 1,
-                               'metric': metric, 'arm': arm, 'fold': fold,
+                    torch.save({'model': _trainable_state_dict(model), 'step': step + 1,
+                               'metric': metric, 'best': best, 'arm': arm, 'fold': fold,
                                'seed': seed, 'code_hash': code_hash()},
                               checkpoint_dir / 'best.pt')
             say(f'    {fold}/{arm} step {step + 1:4d} loss={float(result["loss"].detach()):.4f} '
@@ -190,7 +244,8 @@ def train_arm(fold: str, arm: str, groups_by_step, hardnet_model, device: str,
                f'localization={metric_doc.get("localization", float("nan")):.4f}'
                f'{" *" if improved else ""}')
             if checkpoint_dir:
-                torch.save({'model': model.state_dict(), 'optimizer': opt.state_dict(),
+                torch.save({'model': _trainable_state_dict(model),
+                           'optimizer': opt.state_dict(),
                            'step': step + 1, 'history': history,
                            'evaluations': evaluations, 'best': best},
                           checkpoint_dir / 'last.pt')
@@ -202,6 +257,7 @@ def train_arm(fold: str, arm: str, groups_by_step, hardnet_model, device: str,
 
     elapsed = time.perf_counter() - started
     mps_sync(device)
+    negative_digest_summary = sha256_json(negative_digests) if negative_digests else None
     return {
         'fold': fold, 'arm': arm, 'seed': seed, 'steps': steps,
         'best': best, 'history': history, 'evaluations': evaluations,
@@ -209,4 +265,7 @@ def train_arm(fold: str, arm: str, groups_by_step, hardnet_model, device: str,
         'steps_per_second': steps / max(elapsed, 1e-9),
         'memory': peak_memory(),
         'hardnet_unchanged': frozen_state is not None,
+        'negative_selection_digest': negative_digest_summary,
+        'negative_digests_sample': negative_digests[:3] + negative_digests[-3:]
+        if len(negative_digests) > 6 else negative_digests,
     }

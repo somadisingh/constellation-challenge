@@ -189,3 +189,35 @@ See `lab/WORKSTREAM3.md` and the latest `FINDINGS.md` section for measured resul
 The reconstructed baseline reproduces existing predictions exactly. No production
 change is adopted: the labelled screen does not improve and v2's synthetic gains
 come from relocation, with no identification gain in the six-scene screen.
+
+
+## Experiment 3 — Pairwise Verifier (Learned Presence + Localization)
+
+**Status:** COMPLETE (`outputs/exp3_pairwise/completion_audit.json`) | **Promotion Gate:** 10/10 PASS
+
+Experiment 3 replaces Experiment 1B's descriptor-distance ranker with a learned **pairwise verifier** that directly classifies query-candidate pairs, fusing frozen features from Experiment 1B's own **fold-specific, seed-specific arm-B HardNet fine-tune** (not the generic pretrained backbone). `EXPERIMENT3_REPORT.md` is generated entirely from `outputs/exp3_pairwise/*.json`; no number there is hand-maintained.
+
+An earlier draft of this experiment shipped with several defects that were found and repaired in place: nondeterministic negative sampling (Python's salted `hash()` instead of a derived seed), the wrong HardNet source, calibration/selection leakage across a shared partition, checkpoint metadata that could mismatch its own selected step, and missing/unexecuted verification modules. All prior checkpoints and results were superseded and the full matrix was retrained under the corrected pipeline; see `outputs/exp3_pairwise/corrections.json` for the itemised list and `outputs/exp3_pairwise/superseded_20260913/` for the archived (invalidated) artifacts.
+
+**Corrected primary result (seed 31004, out-of-fold, `verifier_snap_rescue` — inherited verbatim from Experiment 2's own frozen `snap_and_rescue_relocated` rule, never re-selected from held-out data):**
+- Score **0.8170** vs Experiment 2 primary 0.7620 (**+0.0550**)
+- Presence 0.905, localization 0.774, recovery 0.944, identification 0.667 (unchanged — Exp3 never touches C0's constellation identification)
+- Repeat seed 31005: score **0.7992** vs Experiment 2 repeat 0.7513 (**+0.0479**)
+
+**Deployment policy** (`outputs/exp3_pairwise/deployment_policy.json`): a fixed architecture (arm F: pixel CNN + HardNet fusion + listwise objective + hard negatives; offset head dropped for inference) selected from aggregate allowed-sky evidence only, ensembled across the 6 fold/seed checkpoints, never routed by scene identity. A validation-scene submission candidate was produced and validated (`outputs/exp3_pairwise/submission_candidate.csv`, 668 real queries, schema-valid) — **not uploaded to Kaggle** and the production `outputs/joint_submission/submission.csv` was not overwritten.
+
+See `EXPERIMENT3_REPORT.md` and `outputs/exp3_pairwise/` for full results, failure analysis, panels, and reproduction commands. Implementation in `experiments/exp3_pairwise/` (26 modules). Tests in `tests/test_exp3_pairwise.py` (82/82 pass); the full repository suite passes with 0 failures/errors.
+
+## Experiment 4 — Honest Deployment Evaluation and Identification Headroom
+
+**Status:** COMPLETE (`outputs/exp4_joint_identification/completion_audit.json`)
+
+The corrected Experiment 3 submission scored ~0.64 on Kaggle despite a local headline of 0.8170 — because that headline measures each fold's ORACLE-SELECTED arm, not the single fixed architecture (arm F, six-checkpoint ensemble) `deployment_policy.json` actually deploys. Experiment 4 builds a genuinely **leak-free** evaluation of the deployed policy (per held-out sky, only the 2 checkpoints whose own training fold equals that sky, never the full 6-member ensemble whose other 4 members trained on it) and runs a 7-level identification-headroom oracle ladder through the frozen classical recognizer to localize exactly where identification fails.
+
+**Leak-free fixed-policy result:** 0.8208 (`verifier_snap_rescue`, both seeds ensembled) — comparable to, not below, the oracle-selected-arm headline; both are legitimate but different systems, reported side by side.
+
+**Key finding:** Experiment 3's own best-candidate coordinate, fed into geometry with no presence filter, **underperforms the classical system's own rank-1 appearance choice on all three real scenes** — the verifier was optimized for presence/localization reward, not appearance-rank fidelity, and should not be substituted for classical ranking in identification without recalibration.
+
+Phases 3–7 (a new independent-evidence identification solver, joint beam-search assignment, a 9-feature local-geometry screen, a generative degradation-model verifier, and a plate-solving probe) were not implemented this pass; see `outputs/exp4_joint_identification/scope_decision.json` for the itemised reason for each. No new solver was built, so no promotion gate applies and no submission candidate was generated. **Nothing was uploaded to Kaggle.**
+
+See `EXPERIMENT4_REPORT.md` and `outputs/exp4_joint_identification/` for full tables. Implementation in `experiments/exp4_joint_identification/`. Tests in `tests/test_exp4_joint_identification.py` (22/22 pass); full repository suite 244/244.

@@ -4,9 +4,16 @@ Compares each query jointly with its strongest retrieved candidate crops using a
 compact pairwise network, rather than independent per-crop descriptor distance
 (Experiment 1/1B). Frozen inputs only: Experiment 1's blind union candidate banks
 and real-aligned caches, Experiment 1B's corrected synthesis mechanism and
-fold-specific HardNet arm-B checkpoints, and Experiment 2's support-gated hybrid
-integration rule. Production, Experiment 1, Experiment 1B and Experiment 2
-artifacts are read-only from this package.
+fold-specific, seed-specific HardNet arm-B fine-tune checkpoints (resolved by
+`hardnet_source.frozen_hardnet`, loaded from `outputs/exp1b/runs/{fold}/B_s{seed}/
+best.pt`, verified against `outputs/exp1b/selection_frozen.json`), and Experiment
+2's support-gated hybrid integration rule. Production, Experiment 1, Experiment
+1B and Experiment 2 artifacts are read-only from this package.
+
+This docstring previously claimed fold-specific HardNet arm-B checkpoints were
+in use while the code always loaded the generic pretrained backbone instead --
+that defect is corrected as of the repair recorded in
+`outputs/exp3_pairwise/corrections.json`; see `hardnet_source.py`.
 """
 from pathlib import Path
 

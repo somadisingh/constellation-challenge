@@ -21,27 +21,29 @@ from . import ARM_SPEC, MAX_OFFSET
 from .batch import collate
 from .forward import score_batch
 from .losses import listwise_absent_loss
+from .hardnet_source import frozen_hardnet as _frozen_hardnet_source
 from .streams import build_group_stream
 from .training import build_model, build_training_batch, compute_loss
 from experiments.exp1.env import seed_torch
-from experiments.exp1.models import Descriptor, load_backbone
 
 N_GROUPS = 48
 STEPS = 150
 LR = 2e-3
+GATE_SEED = 31004   # matches Exp1B's checkpoints resolved for this fold/seed
 
 
-def _frozen_hardnet(device: str):
-    backbone, _ = load_backbone('hardnet', pretrained=True, device=device)
-    model = Descriptor(backbone, 'hardnet').to(device).eval()
-    for p in model.parameters():
-        p.requires_grad_(False)
+def _frozen_hardnet(device: str, fold: str = 'pisces', seed: int = GATE_SEED):
+    """Fold-specific Exp1B arm-B HardNet (repair task §3.2): the overfit gate must
+    exercise the SAME HardNet source production training uses, not a generic
+    stand-in, so a correctness gate failure here would have caught the original
+    wrong-source defect."""
+    model, _ = _frozen_hardnet_source(device, fold, seed)
     return model
 
 
 def check_loss_falls_and_ranks_correctly(fold: str, arm: str, device: str,
                                          groups: list) -> dict:
-    hardnet_model = _frozen_hardnet(device) if ARM_SPEC[arm]['hardnet_fusion'] else None
+    hardnet_model = _frozen_hardnet(device, fold) if ARM_SPEC[arm]['hardnet_fusion'] else None
     seed_torch(31004)
     model = build_model(arm, hardnet_backbone=hardnet_model).to(device)
     opt = torch.optim.AdamW(model.trainable_parameters(), lr=LR)
@@ -97,7 +99,7 @@ def check_loss_falls_and_ranks_correctly(fold: str, arm: str, device: str,
     }
 
 
-def check_offset_recovers_planted_displacement(device: str) -> dict:
+def check_offset_recovers_planted_displacement(device: str, fold: str = 'pisces') -> dict:
     """Synthetic pair with a KNOWN planted (dx, dy); the head must learn to predict it."""
     rng = np.random.default_rng(7)
     n = 40
@@ -111,7 +113,7 @@ def check_offset_recovers_planted_displacement(device: str) -> dict:
         import cv2
         candidate[i] = cv2.warpAffine(base[i], shift, (32, 32), borderMode=cv2.BORDER_REFLECT)
 
-    hardnet_model = _frozen_hardnet(device)
+    hardnet_model = _frozen_hardnet(device, fold)
     model = build_model('F', hardnet_backbone=hardnet_model).to(device)
     opt = torch.optim.AdamW(model.trainable_parameters(), lr=3e-3)
     q = torch.from_numpy(base).to(device)
@@ -139,10 +141,11 @@ def check_offset_recovers_planted_displacement(device: str) -> dict:
                                   and dy.abs().max() <= MAX_OFFSET + 1e-4)}
 
 
-def check_frozen_hardnet_unchanged(device: str) -> dict:
-    hardnet_model = _frozen_hardnet(device)
+def check_frozen_hardnet_unchanged(device: str, fold: str = 'pisces') -> dict:
+    hardnet_model = _frozen_hardnet(device, fold)
     before = {k: v.detach().clone() for k, v in hardnet_model.state_dict().items()}
     model = build_model('D', hardnet_backbone=hardnet_model).to(device)
+    model.train()   # exercises PairwiseVerifier.train() recursing into HardNet
     opt = torch.optim.AdamW(model.trainable_parameters(), lr=1e-2)
     q = torch.rand(8, 32, 32, device=device)
     c = torch.rand(8, 32, 32, device=device)
@@ -170,7 +173,7 @@ def check_cpu_mps_parity(fold: str, arm: str, groups: list) -> dict:
     results = {}
     for device in ('cpu', 'mps'):
         seed_torch(31004)
-        hardnet_model = _frozen_hardnet(device) if ARM_SPEC[arm]['hardnet_fusion'] else None
+        hardnet_model = _frozen_hardnet(device, fold) if ARM_SPEC[arm]['hardnet_fusion'] else None
         model = build_model(arm, hardnet_backbone=hardnet_model).to(device)
         model.eval()
         spec = ARM_SPEC[arm]
@@ -197,8 +200,8 @@ def run(fold: str = 'pisces', arm: str = 'F', device: str = 'cpu',
 
     checks = {}
     checks['loss_and_ranking'] = check_loss_falls_and_ranks_correctly(fold, arm, device, groups)
-    checks['offset_recovery'] = check_offset_recovers_planted_displacement(device)
-    checks['frozen_hardnet'] = check_frozen_hardnet_unchanged(device)
+    checks['offset_recovery'] = check_offset_recovers_planted_displacement(device, fold)
+    checks['frozen_hardnet'] = check_frozen_hardnet_unchanged(device, fold)
     checks['cpu_mps_parity'] = check_cpu_mps_parity(fold, arm, groups)
 
     passed = (

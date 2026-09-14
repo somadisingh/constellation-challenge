@@ -2,7 +2,12 @@
 from __future__ import annotations
 
 import numpy as np
-import torch
+
+try:
+    import torch
+    _HAS_TORCH = True
+except ImportError:
+    _HAS_TORCH = False
 
 from experiments.exp1.mining import NEGATIVE, POSITIVE as POS_LABEL
 
@@ -15,6 +20,7 @@ def collate(groups: list, kmax: int | None = None) -> dict:
     or a missing centre), so the offset loss can index them directly without
     reconstructing truth from distance.
     """
+    import torch
     kmax = kmax or max((len(g) for g in groups), default=1) or 1
     b = len(groups)
     query = np.zeros((b, 32, 32), np.float32)

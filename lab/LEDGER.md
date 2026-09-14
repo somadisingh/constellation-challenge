@@ -392,3 +392,62 @@ Artifacts: `outputs/imagebench/v1/manifest.json`, `audit.json`,
   diagnostic, not the selected candidate. All agreement bonuses tie baseline.
 - Completed v1 sensitivity: all rules 0/6 ID; no transferable naming improvement.
   Leave-one-real-scene-out retains baseline in every fold. Production unchanged.
+
+### Experiment 4: honest deployment evaluation + identification headroom (2026-09-14)
+- Motivation: the corrected Experiment 3 headline (0.8170) scores each fold's
+  ORACLE-selected arm (D/E/F chosen per fold from allowed-sky evidence), not the
+  single fixed architecture (arm F, 6-checkpoint ensemble) that
+  `outputs/exp3_pairwise/deployment_policy.json` actually deploys on an unseen
+  scene. The Kaggle submission built from that deployment policy scored ~0.64,
+  far below the 0.8170 local headline, prompting this honest re-evaluation.
+- Implemented (`experiments/exp4_joint_identification/`): a genuinely LEAK-FREE
+  fixed-arm-F evaluation -- for each held-out sky, only the 2 checkpoints (one
+  per seed) whose OWN training fold equals that sky are used (never the full
+  6-member deployed ensemble, since 4 of its members trained on any given
+  labelled sky). Result: both-seed leak-free ensemble scores 0.8208 on
+  `verifier_snap_rescue`, comparable to (not below) the oracle-selected-arm
+  headline -- these are different systems and are reported side by side, never
+  conflated. Per-scene breakdown found scorpius's figure-star localization
+  (0.30) markedly weaker than its off-figure localization (0.875) despite
+  strong presence F1, and only 54-63% agreement between the two seed-ensemble
+  members on best-candidate choice.
+- Implemented a 7-level identification-headroom oracle ladder (perfect
+  figure-only coordinates -> perfect all-present coordinates -> oracle-selected
+  real candidate -> classical rank-1 -> Experiment 3's own best candidate ->
+  full frozen alternative slate) through the FROZEN `recognize_joint`
+  (production defaults) on all three real labelled scenes, with explicit
+  failure-mode attribution (retrieval / candidate-ranking / hypothesis-
+  generation / wrong-placement / incorrect-scoring / clutter-null-model).
+- KEY FINDING: Experiment 3's own single best-candidate coordinate per query
+  (no presence filter), fed into geometry, UNDERPERFORMS the classical
+  system's own rank-1 appearance choice on ALL THREE real scenes. Exp3's
+  verifier was optimized for presence/localization reward, not for
+  appearance-rank fidelity that geometric hypothesis seeding depends on -- do
+  not substitute it for classical ranking in identification without
+  recalibration.
+- Per-scene attribution: pisces/scorpius fail primarily at candidate-ranking
+  (the correct candidate exists in the bank but does not rank first);
+  taurus fails at retrieval (a figure query has no admissible candidate within
+  12px of truth anywhere in the frozen bank) compounded by thin figure
+  coverage (6 points, near the min_support=4 floor) and a wrong-class winner
+  matching only 35% of its own template nodes -- consistent with this
+  ledger's already-documented wrong-class score-vs-reference-size correlation.
+- NOT implemented this pass (see `outputs/exp4_joint_identification/
+  scope_decision.json` for the itemised reason each): a new independent-
+  evidence identification solver (cross-fitted seed/held-out support
+  separation, unqueried-star search, multiple-testing correction), a joint
+  beam-search/branch-and-bound multi-candidate assignment, a 9-feature local-
+  geometry screen (angles/ratios/brightness/bispectrum/Fourier-Mellin/
+  RootSIFT/AKAZE/ORB/profile-fitting), a generative degradation-model
+  verifier, and a plate-solving feasibility probe. Each requires substantially
+  more engineering time than one session provides to execute honestly against
+  real held-out evidence; none was truncated and reported as conclusive.
+- Tests: 22/22 new Exp4 tests pass; full repository suite 244/244 (no
+  regressions). Integrity: 1126 protected files checked (constellation/, lab/,
+  run.py, outputs/joint_train, outputs/joint_submission, outputs/exp1*,
+  outputs/exp2_geometry, outputs/exp3_pairwise, and the corresponding source
+  packages), 0 changed/missing/new. `completion_audit.json` status: COMPLETE
+  (0 failures across 14 independent checks).
+- No submission candidate was generated (no new solver cleared a gate, since
+  no new solver was built). Nothing uploaded to Kaggle. See
+  `EXPERIMENT4_REPORT.md` for full tables.

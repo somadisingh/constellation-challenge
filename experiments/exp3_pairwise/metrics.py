@@ -7,7 +7,14 @@ computed on ALLOWED-SKY groups only. Ties break by (1) higher localization,
 from __future__ import annotations
 
 import numpy as np
-import torch
+# torch is imported lazily so this module can be discovered by the production
+# .venv (Python 3.14, no torch). All @torch.no_grad() decorated paths will
+# only be reached from the .venv-exp1 environment.
+try:
+    import torch
+    _HAS_TORCH = True
+except ImportError:
+    _HAS_TORCH = False
 
 from .batch import collate
 from .forward import score_batch
@@ -15,13 +22,14 @@ from .forward import score_batch
 CORRECT_RADIUS = 12.0
 
 
-@torch.no_grad()
 def score_groups(model, groups: list, device: str) -> list:
     """Per-group summary: best candidate, presence decision inputs, localization."""
     if not groups:
         return []
+    import torch
     batch = collate(groups)
-    out = score_batch(model, batch, device)
+    with torch.no_grad():
+        out = score_batch(model, batch, device)
     logits = out['pair_logits'].cpu().numpy()
     absent_logit = out['absent_logit'].cpu().numpy()
     valid = batch['valid'].numpy()
@@ -106,6 +114,75 @@ def _macro_f1(y_true: np.ndarray, y_pred: np.ndarray) -> float:
         den = np.sum(y_true == cls) + np.sum(y_pred == cls)
         f1.append(2 * tp / den if den else 1.0)
     return float(np.mean(f1))
+
+
+def to_calibration_rows(rows: list) -> list:
+    """Adapt `score_groups` output to the row schema `calibration.py` expects.
+
+    `score_groups` (synthetic QueryGroup rows) and `real_scoring.score_real_scene`
+    (real-query rows) use slightly different key names for the same quantities;
+    this adapter lets the SAME `calibration.fit_calibrator`/`apply_calibrator`
+    code serve both, which is required for the repair task §3.3 fix: fitting the
+    arm/checkpoint-selection calibrator on the `synthcal` partition using the same
+    mechanism as the final real-query calibrator.
+    """
+    out = []
+    for r in rows:
+        best = r.get('best_logit')
+        second = r.get('second_logit')
+        out.append({
+            'present': r['kind'] == 'present',
+            'scene': r['target_scene'],
+            'best_logit': best,
+            'best_minus_second': (best - second) if (best is not None and second is not None) else 0.0,
+            'absent_logit': r['absent_logit'],
+            'n_valid': r['n_valid'],
+            'localization_reward': r.get('localization_reward', 0.0),
+        })
+    return out
+
+
+def calibrated_selection_metrics(rows_by_scene: dict, cal: dict, threshold: float) -> dict:
+    """Equal-sky presence (macro-F1 of the FROZEN calibrator's decision) and mean
+    localization reward, on `rows_by_scene` (task §3.3 repair: `val` scored with a
+    calibrator/threshold fit ONLY on `synthcal`, never on `val` itself).
+
+    Structurally identical to `inner_selection_metrics`, but presence comes from
+    `calibration.apply_calibrator`'s probability (comparable across BCE and
+    listwise objectives, since both feed the same 4-feature logistic calibrator)
+    rather than a raw `best_logit - absent_logit >= 0` margin, which is not
+    comparable across the two objectives' different logit scales.
+    """
+    from .calibration import apply_calibrator, listwise_absent_probability
+    per_scene = {}
+    for scene, rows in rows_by_scene.items():
+        calib_rows = to_calibration_rows(rows)
+        probs = (apply_calibrator(cal, calib_rows) if cal.get('ok')
+                else listwise_absent_probability(calib_rows))
+        y = np.array([1 if r['present'] else 0 for r in calib_rows])
+        pred = (probs >= threshold).astype(int)
+        presence = _macro_f1(y, pred)
+        present_rows = [r for r in rows if r['kind'] == 'present']
+        loc = float(np.mean([r['localization_reward'] for r in present_rows])) \
+            if present_rows else 1.0
+        top1 = float(np.mean([r['top1_correct'] for r in present_rows])) \
+            if present_rows else 1.0
+        has = [r.get('bank_has_correct', False) for r in present_rows]
+        per_scene[scene] = {'presence': presence, 'localization': loc,
+                            'top1_correct': top1,
+                            'candidate_recall@12': float(np.mean(has)) if has else 1.0,
+                            'n_present': len(present_rows),
+                            'n_absent': len(rows) - len(present_rows)}
+    scenes = sorted(per_scene)
+    mean_presence = float(np.mean([per_scene[s]['presence'] for s in scenes]))
+    mean_localization = float(np.mean([per_scene[s]['localization'] for s in scenes]))
+    mean_top1 = float(np.mean([per_scene[s]['top1_correct'] for s in scenes]))
+    return {
+        'per_scene': per_scene,
+        'presence': mean_presence, 'localization': mean_localization,
+        'top1_correct': mean_top1,
+        'selection_metric': 0.25 * mean_presence + 0.20 * mean_localization,
+    }
 
 
 def select_arm(results: dict) -> dict:
