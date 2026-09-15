@@ -2031,3 +2031,125 @@ is rejected. The next useful experiment must improve candidate and placement
 recall—especially the missing Taurus hypothesis—rather than reweighting the
 same frozen evidence again. Full details are generated from JSON in
 `EXPERIMENT4C_REPORT.md`.
+
+---
+
+## Experiment 5 — constellation-independent candidate and geometric hypothesis
+## recovery (2026-09-14)
+
+Experiment 5 is implementation-complete and performance-mixed: it corrects
+the mechanism Experiment 4C could not (the frozen hypothesis pool itself),
+but the correction is insufficient to fix Taurus.
+
+**Mandatory oracle audit first.** Measured candidate recall separately for
+figure/off-figure/present/absent queries at radii 12px/36px and top-k in
+{1,3,5,10,20,all}. Every real labelled scene reaches 100% figure-star recall
+in the frozen bank's top-20 (Pisces 10/10, Scorpius 10/10, Taurus 6/6), so
+candidate retrieval is not the bottleneck. The predeclared branch rule
+(>=4 distinct correct physical sources AND >=90% figure coverage at 36px)
+mechanically selected **Branch G** for all three scenes before any new method
+was designed; Branch C was not implemented.
+
+**Taurus's exact failure mechanism, found and partially fixed.** Tracing
+every one of Taurus's 6 true figure-star queries against the frozen bank
+found that 2 of them have their correct candidate at classical-NCC rank 6
+and rank 8 respectively — never rank 0. `constellation.joint.
+generation_points` (the existing triangle-seeding machinery reused
+throughout Experiments 4/4B/4C) offers only each query's rank-0 candidate as
+a seed anchor, so those two correct locations could never seed, or even be
+matched as a held-out point of, any triangle at all. This is a genuine,
+previously undiagnosed defect, not merely a scoring problem. A new
+`multi_candidate_generation_points` function (offering up to k candidates
+per query as seed points) fixes it: Taurus's achievable held-out-support
+ceiling rises from 3 to 4-5, and both previously-invisible correct
+candidates now exist in the search pool.
+
+**The fix is not sufficient.** Exhaustively checking all 1666 attempted
+Taurus seed triples (with the ORIGINAL rank-0-only seeding) found the best
+any hypothesis ever achieves is 3 of the 4 required greedily-matched figure
+stars within 12px. With multi-candidate seeding, barycentric fourth-point
+validation, graph-consistency scoring, and multiple-testing-corrected
+unqueried-star evidence all enabled, the best achieved across every one of
+10 matched comparisons x 2 seeds is still only 2-3 of 4 required matches —
+never crossing the placement-correct threshold. This is a genuine geometric
+limit of this specific template/scene combination under a beam-search-bounded
+seed-triple budget, not a remaining implementation bug (confirmed further by
+a partial brute-force triple x triple check over ~33,000 combinations, which
+also topped out at 3/6).
+
+**Identification-only OOF policy is safe but produces zero net gain.** A
+leak-free, per-fold-fitted confidence-gated override (threshold fit from
+ONLY the two allowed skies' own raw-winner held-out-support, never the
+held-out sky) never fires a harmful override on either seed: Pisces and
+Scorpius's wrong raw geometric winners never clear the allowed-sky-fitted
+floor, so the existing baseline name is kept for all three scenes on both
+seeds. Official metrics are therefore EXACTLY identical to the matching
+fixed-policy baseline (primary 0.8140, repeat 0.8029, patch cells
+byte-identical) — a safe, non-regressing, but non-improving result.
+
+**Synthetic screen result is a genuine negative finding.** On the all-pattern
+class-disjoint synthetic screen (lab/synth.py, reused verbatim), the new
+generator scores 0.05 accuracy, WORSE than both the existing recognizer
+(0.25) and Experiment 4B's own generator (0.275). Root-caused (not a bug):
+`lab.synth` places the correct candidate beyond the fixed k=5 retention rank
+more often than the real frozen banks do, and the fixed per-class triple
+budget does not compensate at higher k. Reported honestly per rule 12
+(synthetic evidence never establishes transfer) and because a genuine
+negative result must never be hidden.
+
+**Promotion gates: 15/24 pass.** Gates 8/9 (Pisces/Scorpius remain correct),
+11/17/18/19 (no regression, presence/localization/recovery unchanged), 21
+(runtime/memory feasible for the deployable k=5 configuration), 22-24
+(tests/integrity/no-scene-routing) all pass. Gates 6/7/10 (hypothesis-recall
+improvement, Taurus gains a correct-placement hypothesis, Taurus becomes
+correct), 13/14/15 (identification/total-score improvement), and 20
+(synthetic improvement) all fail honestly. Gate 12 (mean true-class rank
+improves) is `not_evaluable` (the beam search reports only the winning
+hypothesis per class competition, not a full 48-way ranked list comparable
+to Exp4B's rank definition) and gate 16 (candidate-recovery branch improves
+recall) is `not_applicable` (Branch C was never activated) — neither counted
+as a pass.
+
+No submission candidate was generated (`outputs/exp5_hypothesis_recovery/
+deployment_policy.json` records `not_promoted`); the currently deployed
+system is unchanged. **Nothing was uploaded to Kaggle.**
+
+**Single most promising next step (not attempted this pass):** target the
+CANDIDATE side directly and narrowly for the specific low-rank correct
+candidates `taurus_failure_trace.json` already identifies (query indices with
+correct candidates at rank 6-8), via scene-adaptive self-supervised
+re-scoring — i.e. Branch C's originally-scoped mechanism, applied to the one
+scene/query combination that actually needs it rather than experiment-wide.
+
+Full tables, gate-by-gate results and the itemised failure analysis are in
+`EXPERIMENT5_REPORT.md`, generated entirely from
+`outputs/exp5_hypothesis_recovery/*.json`.
+
+### Post-finalization correction to Experiment 5 failure attribution
+
+The statement above that Taurus reached a genuine or exhaustive geometric
+ceiling is incorrect. `outputs/exp5_hypothesis_recovery/proposal_audit.json`
+uses the oracle figure-only transform strictly for post-experiment attribution
+and finds all six correct Taurus correspondences in the k=5 generation set.
+However, the best correct Taurus triangle ranks 6,698th under the scene
+triangle descriptor, while the new generator evaluates only 300 proposals per
+class. The 1,666-triple trace exhausts the old rank-one proposal list, not the
+multi-candidate geometric correspondence space.
+
+The cause is structural: `SceneIndex` retrieves triangles using side-length
+ratios, which are invariant to similarity transforms but not to the general
+affine transforms the solver later fits. The advertised barycentric check is
+post-proposal and excludes every node already matched by assignment, so it
+cannot validate those held-out matches. The advertised graph score also does
+not use the supplied graph: `extract_patterns` discards the green edges, while
+`graph_consistency` treats every node pair as an edge and operates on mapped
+template coordinates rather than observed matched candidate coordinates.
+
+Two related earlier claims are also corrected. The actual one-based ranks of
+the two non-rank-one Taurus figure candidates in the refreshed trace are 2 and
+6, not 6 and 8. A non-rank-one candidate can still serve as held-out support
+because `build_pool` retains multiple alternatives; single-anchor seeding only
+prevents it from initiating a transform. Candidate retraining is therefore not
+the evidence-supported next step. The next step is a genuinely affine-aware
+proposal mechanism plus real pattern-edge extraction and independent observed
+fourth-point validation.

@@ -575,3 +575,109 @@ Artifacts: `outputs/imagebench/v1/manifest.json`, `audit.json`,
   `outputs/exp4c_calibrated_fusion/`,
   `experiments/exp4c_calibrated_fusion/`, and
   `tests/test_exp4c_calibrated_fusion.py`.
+
+### Experiment 5: constellation-independent candidate and geometric hypothesis
+### recovery (2026-09-14)
+
+- Motivation: Experiment 4C proved reweighting Experiment 4B's frozen
+  hypothesis pool cannot solve identification (Taurus has zero
+  correct-placement hypotheses in that pool). Experiment 5 targets the
+  MECHANISM that creates candidates and hypotheses, not another score fusion.
+- Mandatory oracle audit (`oracle_audit.json`) measured candidate recall
+  (12px/36px x top-{1,3,5,10,20,all}) per scene for figure/off-figure/
+  present/absent queries, and a 7-level hypothesis-recovery ladder reusing
+  `experiments.exp4_joint_identification.headroom_oracles`'s production-
+  identical levels verbatim. Result: 100% figure-star candidate recall in
+  the frozen bank's top-20 for all 3 real scenes -- retrieval is not the
+  bottleneck. The predeclared branch rule (`branch_decision.json`, fixed
+  BEFORE any new method was designed) mechanically selected Branch G
+  (geometric recovery) for every scene; Branch C was correctly not built.
+- **Retained (real, verified fix):** `multi_candidate_generation_points`
+  (new) replaces `constellation.joint.generation_points`'s single rank-0-
+  per-query seed anchor with up to k candidates per query. This fixes a
+  genuine, previously undiagnosed defect: 2 of Taurus's 6 true figure-star
+  queries have their correct candidate at classical-NCC rank 6 and 8, so
+  they could never seed OR be matched as a held-out point of any triangle
+  under the existing seeding rule, independent of any scoring change.
+  `taurus_failure_trace.json` documents this patch-by-patch and
+  hypothesis-by-hypothesis (1666 seed triples exhaustively checked with the
+  ORIGINAL seeding; best achieved 3/4 required figure matches). With the
+  fix, Taurus's achievable held-out-support ceiling rises from 3 to 4-5 and
+  both previously-invisible candidates enter the search pool.
+- **Also retained:** deterministic PROSAC-style triple ordering with
+  explicit collinearity/condition-number/duplicate-source rejection;
+  affine-invariant barycentric fourth-point validation (`barycentric.py`,
+  written from scratch -- no such primitive existed anywhere in the repo);
+  partial graph-consistency scoring over the mapped template's own edges
+  (allows missing nodes, penalizes disconnected fragments); a binomial-
+  surprise held-out-support term (reusing production `recognize_joint`'s own
+  multiple-testing correction) that fixes a NEW small-pattern bias a naive
+  support/node-count fraction would have introduced (a 4-node pattern
+  matching 1 extra node would otherwise score a false 100%); and a bounded
+  deterministic beam search with a full, auditable 8-term score
+  decomposition. `use_quads=False` in `SceneIndex` construction cut runtime
+  ~2x (quad descriptor construction, O(n^4), dominated profiling despite
+  quads never being used downstream anywhere in this repo).
+- **Rejected/insufficient:** even with every mechanism enabled, no generated
+  Taurus hypothesis (10 matched comparisons x 2 seeds, plus a partial
+  brute-force ~33,000-combination check) ever recovers more than 2-3 of the
+  4 required figure-star matches -- a genuine geometric limit of this
+  template/scene combination under a beam-search-bounded seed-triple
+  budget, not a remaining implementation bug.
+- **Official result:** leak-free, per-fold-fitted confidence-gated
+  identification-only override (threshold fit from ONLY the two allowed
+  skies' own raw-winner held-out-support) never fires a harmful override on
+  either seed. Official metrics are EXACTLY identical to the matching
+  fixed-policy baseline: primary 0.8140, repeat 0.8029, patch cells
+  byte-identical on both seeds. Safe (zero regression) but zero net gain.
+- **Synthetic screen (engineering evidence only, real negative finding):**
+  the new generator scores 0.05 accuracy on the all-pattern class-disjoint
+  screen, worse than both the existing recognizer (0.25) and Experiment 4B's
+  generator (0.275). Root-caused: `lab.synth`'s harder queries place the
+  correct candidate beyond the fixed k=5 retention rank more often than the
+  real frozen banks do. Reported honestly, not hidden.
+- **Promotion:** 15/24 gates pass; overall false. Gate 12 (mean true-class
+  rank improves) reported `not_evaluable` (beam search returns only the
+  winning hypothesis, not a comparable 48-way rank); gate 16 (candidate-
+  recovery branch improves recall) reported `not_applicable` (Branch C never
+  activated) -- neither counted as a pass. No submission candidate was
+  generated and nothing was uploaded.
+- **Runtime:** deployable k=5 configuration: max 313MB peak memory, ~27s
+  mean per scene/seed -- feasible on an M4 Pro. The k=20 "full multi-
+  candidate bank" required ABLATION (never deployed) reaches 11-20GB peak
+  memory due to O(k^2) pool/distance-matrix scaling in
+  `constellation.joint.assignment` -- reported honestly as a real, measured
+  limitation of that specific ablation, not averaged away.
+- **Remaining:** the next experiment should target the CANDIDATE side
+  narrowly for the exact low-rank correct candidates `taurus_failure_trace.
+  json` already names (Branch C's originally-scoped mechanism, applied to
+  the specific scene/query combination that needs it, not experiment-wide).
+- Tests: 32/32 new Exp5 tests pass; full repository suite 329/329
+  (`.venv-exp1`) and 329/329 with 62 skipped (`.venv`, no torch) -- no
+  regressions. Integrity: 1285 protected files checked (constellation/,
+  lab/, run.py, outputs/joint_train, outputs/joint_submission,
+  outputs/exp1*, outputs/exp2_geometry, outputs/exp3_pairwise,
+  outputs/exp4_joint_identification, outputs/exp4b_joint_solver,
+  outputs/exp4c_calibrated_fusion, and the corresponding source packages),
+  0 changed/missing/new. `completion_audit.json`: implementation_complete=
+  True (15/15 checks pass), performance_gates_passed=False (15/24) --
+  reported as separate facts per this repository's rule that a failed
+  performance experiment must never be relabelled a successful method.
+  See `EXPERIMENT5_REPORT.md` for full tables and the itemised failure
+  analysis.
+
+#### Experiment 5 post-finalization correction
+
+- **Retracted attribution:** the search did not establish a Taurus geometric
+  ceiling and was not exhaustive over the multi-candidate correspondence
+  space. The best correct triple ranks 6,698th, outside the 300-per-class
+  proposal budget.
+- **Proposal defect:** triangle side ratios are used to retrieve proposals
+  before fitting an affine map, although those ratios are not affine-invariant.
+- **Validation defects:** the fourth-point check excludes matched nodes; the
+  graph check discards the supplied green-edge adjacency, treats every pair as
+  an edge, and does not compare against observed matched coordinates.
+- **Corrected next action:** replace proposal generation with a genuinely
+  affine-aware mechanism and extract the real pattern graph. Do not spend the
+  next experiment on candidate retraining: all six correct Taurus figure
+  candidates already occur in the k=5 generation set.

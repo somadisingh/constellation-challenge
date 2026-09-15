@@ -260,3 +260,64 @@ See `EXPERIMENT4C_REPORT.md` and
 `tests/test_exp4c_calibrated_fusion.py`. The next justified direction is
 candidate/hypothesis recall through scene-adaptive self-supervised
 correspondence, rather than another fusion model over the same frozen pool.
+
+## Experiment 5 — Constellation-Independent Candidate and Geometric Hypothesis Recovery
+
+**Status:** COMPLETE (implementation) | **Performance Gates:** 15/24 PASS | **Not promoted**
+
+A mandatory oracle audit measured whether Experiment 4C's failure was candidate
+retrieval or geometric-hypothesis construction. Every real labelled scene has
+100% figure-star candidate recall within 12px in the frozen bank's top-20 (or
+full bank), so the predeclared branch rule mechanically selected **Branch G**
+(geometric recovery only) for all three scenes; Branch C (scene-adaptive
+candidate recovery) was not implemented, as the task allows when the audit
+does not activate it.
+
+Branch G adds multi-candidate seeding (fixing a real, previously-hidden bug:
+`constellation.joint.generation_points` only ever offered each query's
+rank-1 candidate as a triangle-seed anchor, silently excluding 2 of Taurus's
+6 correct figure candidates whose correct location ranked 6th-8th), affine
+triple proposals with deterministic PROSAC-style ordering, affine-invariant
+barycentric fourth-point validation, partial graph-consistency scoring, and
+a bounded deterministic beam search with a full, auditable score
+decomposition — all as an **identification-only** policy that reuses
+Experiment 3's patch cells byte-for-byte.
+
+**What works:** multi-candidate seeding measurably raises Taurus's achievable
+held-out-support ceiling and recovers two previously seed-invisible correct
+figure candidates. The leak-free, per-fold-fitted confidence-gated override
+never fires a harmful override on either seed — Pisces and Scorpius stay
+correct, patch cells are exactly unchanged, and official metrics exactly
+match the matching baseline (primary 0.8140, repeat 0.8029) with zero
+regression.
+
+**What fails:** even with every mechanism enabled and an exhaustive seed-triple
+search (1666 triples checked for Taurus alone), no generated Taurus hypothesis
+ever recovers more than 2 of the 4 required figure-star matches — the
+placement-correct threshold is never crossed, so Taurus remains misidentified
+and there is zero net official-score gain. The new generator also
+underperforms both the existing recognizer and Exp4B's generator on the
+all-pattern synthetic screen (0.05 vs 0.25/0.275 accuracy), a genuine
+negative finding reported honestly rather than hidden. 9 of 24 gates fail; no
+submission candidate was generated. **Nothing was uploaded to Kaggle.**
+
+See `EXPERIMENT5_REPORT.md` and `outputs/exp5_hypothesis_recovery/` for full
+tables, gate-by-gate results, and the failure analysis (including
+`taurus_failure_trace.json`'s patch-by-patch and hypothesis-by-hypothesis
+evidence). Implementation is in `experiments/exp5_hypothesis_recovery/`;
+tests are in `tests/test_exp5_hypothesis_recovery.py` (32/32 pass); full
+repository suite 329/329 (.venv-exp1) and 329/329 with 62 skipped (.venv, no
+torch). The next justified direction is scene-adaptive self-supervised
+re-scoring of the specific low-rank correct candidates identified in
+Taurus's failure trace, applied narrowly rather than experiment-wide.
+
+**Post-finalization correction:** the Taurus search was not exhaustive. A
+labelled diagnostic in `proposal_audit.json` shows that all six correct Taurus
+figure locations are already present in the k=5 generation set, but the best
+correct triangle ranks 6,698th under a 300-proposal cutoff. The triangle index
+uses similarity-invariant side ratios before fitting an affine transform. The
+fourth-point check excludes already matched nodes, and the graph score does not
+use the supplied green pattern edges or observed matched coordinates.
+Candidate retraining is therefore not the next justified step. Proposal
+generation must become genuinely affine-aware, and the supplied pattern graph
+must be extracted and used correctly.
