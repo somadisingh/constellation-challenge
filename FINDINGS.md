@@ -2153,3 +2153,23 @@ prevents it from initiating a transform. Candidate retraining is therefore not
 the evidence-supported next step. The next step is a genuinely affine-aware
 proposal mechanism plus real pattern-edge extraction and independent observed
 fourth-point validation.
+# 2026-09-14 — Experiment 5B affine proposal correction
+
+Experiment 5's triangle side-ratio proposal was not affine invariant. A direct
+audit found all six correct Taurus correspondences in the bank, but the best
+correct triangle ranked 6,698 against a 300-proposal budget. Experiment 5B uses
+four-point signed-area affine invariants and real green-line graph extraction.
+With separate rank-one and one-alternate streams, it ranks Pisces and Taurus
+first with margins 3.142 and 3.329. Its wrong Scorpius winner has margin 0.180,
+so a fixed margin/support gate rejects it and retains the correct classical
+answer. The resulting hybrid is 3/3 on development skies. A completed 12-shape
+synthetic pilot accepted 2/2 correct rescues; an interrupted 46/48 observation
+accepted 5/5. These are engineering checks, not hidden-scene validation. See
+`EXPERIMENT5B_REPORT.md`.
+
+The frozen gate was then applied to all 16 validation scenes. It accepted four
+hypotheses, confirmed three existing labels, and changed only
+`constellation_04` from `corona-australis` to `canis-major` (score 13.321,
+margin 6.908, support 11, held-out support 7). The resulting A/B CSV preserves
+every Exp3 patch cell exactly; full evidence is in
+`outputs/exp5b_affine_proposals/validation_rescue.json`.
