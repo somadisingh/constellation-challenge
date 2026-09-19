@@ -1,0 +1,47 @@
+{
+  "exp5c": {
+    "command": [
+      "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/.venv/bin/python",
+      "-m",
+      "unittest",
+      "tests.test_exp5c_affine_recovery",
+      "-v"
+    ],
+    "errored": 0,
+    "exit_code": 0,
+    "failed": 0,
+    "ok": true,
+    "passed": 18,
+    "run": 18,
+    "skipped": 0,
+    "tail": "\ntest_all_arms_use_four_distinct_queries (tests.test_exp5c_affine_recovery.CandidateTests.test_all_arms_use_four_distinct_queries) ... ok\ntest_alternates_are_not_collapsed (tests.test_exp5c_affine_recovery.CandidateTests.test_alternates_are_not_collapsed) ... ok\ntest_no_query_or_location_reuse_in_assignment (tests.test_exp5c_affine_recovery.CandidateTests.test_no_query_or_location_reuse_in_assignment) ... ok\ntest_proposal_order_deterministic (tests.test_exp5c_affine_recovery.CandidateTests.test_proposal_order_deterministic) ... ok\ntest_query_order_invariance_for_complete_small_arm (tests.test_exp5c_affine_recovery.CandidateTests.test_query_order_invariance_for_complete_small_arm) ... ok\ntest_stream_budgets_are_separate (tests.test_exp5c_affine_recovery.CandidateTests.test_stream_budgets_are_separate) ... ok\ntest_atomic_checkpoint_and_resume_shape (tests.test_exp5c_affine_recovery.CheckpointAndCsvTests.test_atomic_checkpoint_and_resume_shape) ... ok\ntest_csv_name_only_mutation_and_padding (tests.test_exp5c_affine_recovery.CheckpointAndCsvTests.test_csv_name_only_mutation_and_padding) ... ok\ntest_leaderboard_recommendation_changes_only_constellation_08 (tests.test_exp5c_affine_recovery.CheckpointAndCsvTests.test_leaderboard_recommendation_changes_only_constellation_08) ... ok\ntest_resume_code_skips_completed_patterns (tests.test_exp5c_affine_recovery.CheckpointAndCsvTests.test_resume_code_skips_completed_patterns) ... ok\ntest_taurus_is_excluded_from_validation_and_promotion (tests.test_exp5c_affine_recovery.CheckpointAndCsvTests.test_taurus_is_excluded_from_validation_and_promotion) ... ok\ntest_validation_source_does_not_read_train_truth (tests.test_exp5c_affine_recovery.CheckpointAndCsvTests.test_validation_source_does_not_read_train_truth) ... ok\ntest_all_patterns_and_real_edges_extracted (tests.test_exp5c_affine_recovery.GraphTests.test_all_patterns_and_real_edges_extracted) ... ok\ntest_graph_is_not_complete (tests.test_exp5c_affine_recovery.GraphTests.test_graph_is_not_complete) ... ok\ntest_pattern_order_invariance (tests.test_exp5c_affine_recovery.GraphTests.test_pattern_order_invariance) ... ok\ntest_general_affine_invariance_including_reflection (tests.test_exp5c_affine_recovery.HashingTests.test_general_affine_invariance_including_reflection) ... ok\ntest_point_order_stability (tests.test_exp5c_affine_recovery.HashingTests.test_point_order_stability) ... ok\ntest_seed_nodes_excluded_but_observed_fourth_point_counts (tests.test_exp5c_affine_recovery.VerificationTests.test_seed_nodes_excluded_but_observed_fourth_point_counts) ... ok\n\n----------------------------------------------------------------------\nRan 18 tests in 4.900s\n\nOK"
+  },
+  "ml_capable": {
+    "available": false,
+    "errored": 1,
+    "failed": 0,
+    "passed": 0,
+    "reason": "ModuleNotFoundError(\"No module named 'torch'\")",
+    "run": 0,
+    "skipped": 0
+  },
+  "production": {
+    "command": [
+      "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/.venv/bin/python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "errored": 45,
+    "exit_code": 1,
+    "failed": 5,
+    "ok": false,
+    "passed": 200,
+    "run": 329,
+    "skipped": 79,
+    "tail": "    self.assertTrue(p.exists())\nAssertionError: False is not true\n\n======================================================================\nFAIL: test_full_evaluation_reuses_exp4_leak_free_checkpoint_membership (test_exp4b_joint_solver.LeakFreeMembershipReuse.test_full_evaluation_reuses_exp4_leak_free_checkpoint_membership)\nPhase 5's full_evaluation.py must never load a checkpoint trained on\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/tests/test_exp4b_joint_solver.py\", line 271, in test_full_evaluation_reuses_exp4_leak_free_checkpoint_membership\n    self.assertTrue(own_dir.exists(), f'missing checkpoint dir for {fold}')\nAssertionError: False is not true : missing checkpoint dir for pisces\n\n======================================================================\nFAIL: test_protected_before_snapshot_exists_and_is_nonempty (test_exp4b_joint_solver.ProtectedIntegrity.test_protected_before_snapshot_exists_and_is_nonempty)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/tests/test_exp4b_joint_solver.py\", line 306, in test_protected_before_snapshot_exists_and_is_nonempty\n    self.assertTrue(path.exists())\nAssertionError: False is not true\n\n======================================================================\nFAIL: test_protected_before_snapshot_exists (test_exp5_hypothesis_recovery.ProtectedIntegrity.test_protected_before_snapshot_exists)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/tests/test_exp5_hypothesis_recovery.py\", line 331, in test_protected_before_snapshot_exists\n    self.assertTrue(path.exists())\nAssertionError: False is not true\n\n======================================================================\nFAIL: test_catalog (test_geometry.GeometryTests.test_catalog)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/tests/test_geometry.py\", line 24, in test_catalog\n    self.assertEqual(len(patterns),48)\nAssertionError: 0 != 48\n\n----------------------------------------------------------------------\nRan 329 tests in 6.932s\n\nFAILED (failures=5, errors=45, skipped=79)"
+  }
+}

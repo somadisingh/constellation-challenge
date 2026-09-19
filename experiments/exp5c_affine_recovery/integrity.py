@@ -50,7 +50,8 @@ def _iter_files(root: Path):
     if not root.exists():
         return
     for p in sorted(root.rglob('*')):
-        if p.is_file() and '__pycache__' not in p.parts and p.suffix.lower() != '.md':
+        if (p.is_file() and p.name != '.DS_Store' and '__pycache__' not in p.parts
+                and p.suffix.lower() != '.md'):
             yield p
 
 

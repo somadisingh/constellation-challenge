@@ -1,0 +1,148 @@
+{
+  "calibration_gate": {
+    "stable_correct_count_min": 2,
+    "stable_incorrect_rate_max": 0.2,
+    "stable_precision_min": 0.8
+  },
+  "cases": [
+    {
+      "baseline_confidence": 0.9999953989046653,
+      "baseline_correct": true,
+      "baseline_margin": 10.950621906863093,
+      "baseline_winner": "canis-major",
+      "generation_seed": 1796507442,
+      "pattern": "canis-major",
+      "seed_label": "seed1",
+      "selection_group": "all_correct"
+    },
+    {
+      "baseline_confidence": 0.1845881596681528,
+      "baseline_correct": false,
+      "baseline_margin": 0.6591153391719882,
+      "baseline_winner": "aquila",
+      "generation_seed": 3507798309,
+      "pattern": "carina",
+      "seed_label": "seed1",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.18344110878490516,
+      "baseline_correct": false,
+      "baseline_margin": 0.7926909713457997,
+      "baseline_winner": "lupus",
+      "generation_seed": 2147961016,
+      "pattern": "sagittarius",
+      "seed_label": "seed1",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.16881789780996592,
+      "baseline_correct": false,
+      "baseline_margin": 0.8296541881138193,
+      "baseline_winner": "lepus",
+      "generation_seed": 849832675,
+      "pattern": "aries",
+      "seed_label": "seed1",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.1362837930406863,
+      "baseline_correct": false,
+      "baseline_margin": 0.043119270573469315,
+      "baseline_winner": "crater",
+      "generation_seed": 3224802749,
+      "pattern": "crux",
+      "seed_label": "seed1",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.12509915625923543,
+      "baseline_correct": false,
+      "baseline_margin": 0.21336971950979855,
+      "baseline_winner": "lepus",
+      "generation_seed": 3385800462,
+      "pattern": "camelopardalis",
+      "seed_label": "seed1",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.9987588196573723,
+      "baseline_correct": true,
+      "baseline_margin": 6.640040659003679,
+      "baseline_winner": "carina",
+      "generation_seed": 3497069606,
+      "pattern": "carina",
+      "seed_label": "seed2",
+      "selection_group": "all_correct"
+    },
+    {
+      "baseline_confidence": 0.6441810172108572,
+      "baseline_correct": true,
+      "baseline_margin": 3.119238345120368,
+      "baseline_winner": "pavo",
+      "generation_seed": 448156174,
+      "pattern": "pavo",
+      "seed_label": "seed2",
+      "selection_group": "all_correct"
+    },
+    {
+      "baseline_confidence": 0.21740553903359136,
+      "baseline_correct": false,
+      "baseline_margin": 1.342633714212167,
+      "baseline_winner": "pavo",
+      "generation_seed": 463598721,
+      "pattern": "scorpius",
+      "seed_label": "seed2",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.17573606397187982,
+      "baseline_correct": false,
+      "baseline_margin": 0.32877623771818776,
+      "baseline_winner": "pavo",
+      "generation_seed": 1586223034,
+      "pattern": "reticulum",
+      "seed_label": "seed2",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.14946504437781793,
+      "baseline_correct": false,
+      "baseline_margin": 0.5840290984973784,
+      "baseline_winner": "orion",
+      "generation_seed": 39783593,
+      "pattern": "bootes",
+      "seed_label": "seed2",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.08803631165553613,
+      "baseline_correct": false,
+      "baseline_margin": 0.10425047033669532,
+      "baseline_winner": "cetus",
+      "generation_seed": 338864045,
+      "pattern": "orion",
+      "seed_label": "seed2",
+      "selection_group": "highest_confidence_incorrect"
+    },
+    {
+      "baseline_confidence": 0.08280654513346544,
+      "baseline_correct": false,
+      "baseline_margin": 0.7256254562208699,
+      "baseline_winner": "lepus",
+      "generation_seed": 953512085,
+      "pattern": "ophiuchus",
+      "seed_label": "seed2",
+      "selection_group": "highest_confidence_incorrect"
+    }
+  ],
+  "families": [
+    "top1",
+    "top3",
+    "jitter_2px",
+    "query_dropout_10pct"
+  ],
+  "selection_rule": "All correct non-Taurus winners plus the five highest-confidence incorrect non-Taurus winners from each untouched final seed.",
+  "stable_wins_min": 3,
+  "status": "FROZEN_BEFORE_PERTURBATION_RUN"
+}

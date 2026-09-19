@@ -681,3 +681,73 @@ Artifacts: `outputs/imagebench/v1/manifest.json`, `audit.json`,
   affine-aware mechanism and extract the real pattern graph. Do not spend the
   next experiment on candidate retraining: all six correct Taurus figure
   candidates already occur in the k=5 generation set.
+
+### Experiment 5C: bounded affine-quad recovery (2026-09-16)
+
+- **Retained mechanism:** signed-area affine quadruple indexing, bounded deeper-rank
+  streams, real extracted graph edges, independent held-out verification, query and
+  spatial-location uniqueness, residual-distribution diagnostics, and multiplicity-
+  adjusted null significance. Full-budget development recovers Taurus and keeps all
+  three development names correct.
+- **Selective synthetic evidence:** two untouched 40-pattern seeds each accept one
+  correct hypothesis (precision 1.0, wrong-overwrite rate 0.0), but correct rescues
+  cover only one pattern family per seed. This fails the diversity promotion gate;
+  raw accuracy is 0.025 and 0.050. Stream agreement without calibrated structural
+  confidence is rejected because its precision is only about 0.04-0.05.
+- **Validation:** the frozen policy accepts constellation_04 as canis-major,
+  constellation_08 as orion, and constellation_12 as lupus. The exact Experiment 3
+  CSV is unavailable, so changes versus that baseline are unknown and no CSV is
+  emitted. The prior constellation_04-only candidate is not relabeled as a new
+  Kaggle result.
+- **Runtime:** full validation inference completes 16 scenes in about 410 seconds;
+  the slowest solver scene is about 38 seconds on this M4 Pro. Synthetic screens are
+  checkpointed atomically after every pattern and resume without recomputing completed
+  patterns.
+- **Promotion:** 12/15 gates pass. Failures are multi-family rescue diversity,
+  exact Experiment 3 patch-cell verification (artifact absent), and the full historical
+  suite (ignored outputs and PyTorch environment absent). Experiment 5C's 16 tests and
+  the 240-file protected-artifact audit pass. Nothing was uploaded to Kaggle.
+
+### Experiment 5C post-submission attribution (2026-09-18)
+
+- **Exact baseline restored:** the preserved Experiment 3 CSV has SHA-256
+  `1bccbfd14be44095353b209a102c032b419c2dab9369bb538bb514410fbe7ea6`.
+- **Public leaderboard ablations:** baseline 0.64695; constellation_04-only
+  0.64695; constellation_08-only 0.69695; combined 0.69695. These are
+  user-reported deployment results, not validation evidence.
+- **Deployment decision:** recommend only `constellation_08: eridanus -> orion`.
+  Reject the constellation_04 override because it has no measurable one-change
+  public-score benefit. Every non-constellation CSV cell remains identical.
+- **Taurus policy:** adversarial diagnostic only. Exclude Taurus from validation,
+  confidence calibration, model selection, and promotion gates. Retain its trace only
+  for mechanism debugging.
+- **Guardrail:** do not tune further thresholds against repeated public-leaderboard
+  submissions. Search for additional corrections on untouched scenes with frozen
+  policies and non-Taurus evidence.
+
+### Experiment 5D stability audit (2026-09-18)
+
+- **Target:** `constellation_07: hydra -> perseus`, selected as the strongest
+  remaining rejected affine hypothesis before perturbation testing.
+- **Frozen test:** 15 trials across top-five, top-three, rank-one, two-pixel
+  coordinate noise, and ten-percent query dropout; three deterministic seeds each.
+- **Result:** Perseus wins 9/15 overall: 3/3 top-five, 3/3 top-three, 0/3 rank-one,
+  2/3 jitter, and 1/3 dropout. Median winning margin 1.323, support 7, held-out
+  support 4.
+- **Decision:** reject. Overall stability is 60% versus the frozen 80% requirement,
+  and two perturbation families fail the two-of-three minimum. No CSV generated.
+- **Leakage boundary:** Taurus is not read or used. Kaggle scores are not used for
+  thresholds. No upload performed.
+
+### Experiment 5E perturbation-stability calibration (2026-09-18)
+
+- **Calibration data:** 13 non-Taurus cases from the two frozen synthetic final
+  seeds: all three correct winners plus five highest-confidence incorrect winners
+  per seed.
+- **Perturbations:** top-one, top-three, two-pixel coordinate noise, and ten-percent
+  query dropout. Stable means the baseline winner survives at least 3/4 variants.
+- **Result:** 2/13 stable cases, one correct and one incorrect. Stable precision 0.50;
+  stable incorrect rate 0.10. The 0.80 precision and two-correct-case gate fails.
+- **Decision:** do not run validation-wide stability scanning and do not create a
+  CSV. Stability alone cannot serve as a deployment filter. Taurus was excluded and
+  Kaggle scores were not used.

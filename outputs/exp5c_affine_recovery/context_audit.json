@@ -1,0 +1,103 @@
+{
+  "status": "COMPLETE_WITH_MISSING_HISTORICAL_ARTIFACTS",
+  "files_inspected": {
+    "README.md": "6b159acc54e8a9c939edb6d68773b7deffc78c1ffce41b52f62c42af75b7bc34",
+    "FINDINGS.md": "576d786d5e9d0691e1474c0fa0133845c9e03be9d4d033a9353de75e564d739d",
+    "lab/LEDGER.md": "9103b912996dd47a09a30cc46a1748e1054813131c0bc20f40a9f82524b9e6b7",
+    "EXPERIMENT1_REPORT.md": "3db4b0babe14c3fe83247ef384cf1c0cac86bb964ee89dd9981930d700e7c7f9",
+    "EXPERIMENT1B_REPORT.md": "84fc803e35d7d01111c980a4a957178d3a33a7ab28ffa5d590c52733279dcd33",
+    "EXPERIMENT3_REPORT.md": "07272765a3203dc393d621e2774ef7cec6797808619202dcd42e6586060f75f1",
+    "EXPERIMENT4B_REPORT.md": "7f5612b8597d28655f15d432e55ecf27d272fe13dcac1e8976c87fe1c192cf62",
+    "EXPERIMENT4C_REPORT.md": "216511b785c5e065f3809c280a03d262150a9c53f5125e43d667583cfebcffe8",
+    "EXPERIMENT5_REPORT.md": "974600c3f16be8e53f15d674df573705383c1ed243b6a68e63fabfd266a03798",
+    "EXPERIMENT5B_REPORT.md": "f62287fa8091e5165ba3e5549970097c78223b4b6898a030806a1fb39ead8c4f",
+    "experiments/exp5b_affine_proposals/pattern_graph.py": "acf71beb2b8718bdafc1f30e8891b19306610ab94aa1834b6ac9eb6ac14cb1ed",
+    "experiments/exp5b_affine_proposals/quad_recovery.py": "c06ed1eed0b5cabbf6b89d9b3bfc815e2ac3513c22652e98f3fc613f9e2cd0cc",
+    "experiments/exp5b_affine_proposals/synthetic_screen.py": "5186858fc02f8aae9f500e20ab92b55a03ac2985b9521f6f16a1454768cd590d",
+    "experiments/exp5b_affine_proposals/validation_rescue.py": "bbf4894995fdd1bdc678f96bb393a18b0b706e3112833a112ba0777b3f914e54"
+  },
+  "unavailable_historical_files": [
+    "outputs/exp3_pairwise/corrections.json",
+    "outputs/exp3_pairwise/deployment_policy.json",
+    "outputs/exp5_hypothesis_recovery/proposal_audit.json",
+    "outputs/exp5_hypothesis_recovery/failure_analysis.json",
+    "outputs/exp5b_affine_proposals/train_results.json",
+    "outputs/exp5b_affine_proposals/synthetic_all48.json",
+    "outputs/exp5b_affine_proposals/partial_screen_observation.json",
+    "outputs/exp5b_affine_proposals/validation_rescue.json"
+  ],
+  "protected_inputs": {
+    "exp3_submission_candidate_csv": "1bccbfd14be44095353b209a102c032b419c2dab9369bb538bb514410fbe7ea6",
+    "exp5b_submission_candidate_csv": null,
+    "train_ground_truth_csv": "34e577dbbd98c26507e3d4019d8443cbe9ac5d7cdd9960a7f9d5eb58ad49e7b9",
+    "sample_submission_csv": "e5d9061b2c914e28c3f01c5303c1257f10c18d1179de49775739c1af91651742"
+  },
+  "reproduced_previous_results": {
+    "exp3_primary_headline": {
+      "score": 0.817,
+      "presence": 0.9046,
+      "localization": 0.7735,
+      "recovery": 0.9444,
+      "identification": 0.6667
+    },
+    "exp3_kaggle_score": "~0.64",
+    "exp5_taurus_failure_cause": "Triangle side ratios (a/c, b/c) are similarity-invariant, not affine-invariant; best Taurus triangle ranked 6,698 against budget 300.",
+    "exp5_oracle_bank": "All 6 Taurus figure correspondences exist in candidate bank top-5.",
+    "exp5b_labelled_results": {
+      "pisces": {
+        "winner": "pisces",
+        "margin": 3.142,
+        "support": 10,
+        "held_out": 6,
+        "action": "accept"
+      },
+      "scorpius": {
+        "winner": "orion",
+        "margin": 0.18,
+        "support": 8,
+        "held_out": 4,
+        "action": "reject_retain_classical"
+      },
+      "taurus": {
+        "winner": "taurus",
+        "margin": 3.329,
+        "support": 11,
+        "held_out": 7,
+        "action": "accept"
+      }
+    },
+    "exp5b_synthetic_12pilot": {
+      "raw_accuracy": "3/12",
+      "gate_accepted": "2/12",
+      "precision": "2/2"
+    },
+    "exp5b_synthetic_46incomplete": {
+      "completed": 46,
+      "gate_accepted": 5,
+      "gate_accepted_correct": 5,
+      "note": "interrupted due to uncheckpointed runtime"
+    },
+    "exp5b_validation_rescue": {
+      "accepted": 4,
+      "confirmed": 3,
+      "changed": 1,
+      "changed_scene": "constellation_04",
+      "from": "corona-australis",
+      "to": "canis-major"
+    }
+  },
+  "stale_or_contradictory_claims": [
+    "Experiment 5 prose initially claimed Taurus reached an 'exhaustive geometric ceiling', but post-finalization proposal audit proved the search was only exhaustive over the similarity-invariant proposal list.",
+    "Experiment 5 fourth-point check excluded already-matched template nodes, preventing verification of held-out matches.",
+    "Experiment 5 graph-consistency check treated all node pairs as edges on mapped template coords and ignored observed candidate coords and green diagram lines.",
+    "Experiment 5B's 46-case synthetic run was interrupted due to lack of per-scene checkpointing and must not be reported as a completed 48-diagram screen."
+  ],
+  "baseline_patch_prediction_csv": {
+    "path": "outputs/exp3_pairwise/submission_candidate.csv",
+    "sha256": "1bccbfd14be44095353b209a102c032b419c2dab9369bb538bb514410fbe7ea6",
+    "available": true,
+    "rows": 16,
+    "columns": 90,
+    "consequence": null
+  }
+}

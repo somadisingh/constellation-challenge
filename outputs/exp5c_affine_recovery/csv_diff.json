@@ -1,0 +1,37 @@
+{
+  "base_sha256": "1bccbfd14be44095353b209a102c032b419c2dab9369bb538bb514410fbe7ea6",
+  "non_constellation_cells_identical": true,
+  "status": "COMPLETE",
+  "variants": {
+    "exploratory": {
+      "accepted": 3,
+      "changed": [
+        "constellation_04",
+        "constellation_08"
+      ],
+      "confirmed": [
+        "constellation_12"
+      ]
+    },
+    "primary": {
+      "accepted": 3,
+      "changed": [
+        "constellation_04",
+        "constellation_08"
+      ],
+      "confirmed": [
+        "constellation_12"
+      ]
+    },
+    "strict": {
+      "accepted": 3,
+      "changed": [
+        "constellation_04",
+        "constellation_08"
+      ],
+      "confirmed": [
+        "constellation_12"
+      ]
+    }
+  }
+}

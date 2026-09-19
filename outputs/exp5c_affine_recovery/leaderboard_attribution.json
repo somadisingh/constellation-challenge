@@ -1,0 +1,47 @@
+{
+  "attribution": {
+    "combined_increment_over_constellation_08_only": 0.0,
+    "constellation_04_to_canis_major_measurable_gain": 0.0,
+    "constellation_08_to_orion_gain": 0.05
+  },
+  "evidence_type": "user_reported_kaggle_public_leaderboard",
+  "no_kaggle_upload_performed_by_experiment_code": true,
+  "not_validation_evidence": true,
+  "public_scores": {
+    "combined_04_and_08": 0.69695,
+    "constellation_04_only": 0.64695,
+    "constellation_08_only": 0.69695,
+    "experiment3_baseline": 0.64695
+  },
+  "recommended_candidate": {
+    "base_path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp3_pairwise/submission_candidate.csv",
+    "base_sha256": "1bccbfd14be44095353b209a102c032b419c2dab9369bb538bb514410fbe7ea6",
+    "changes": [
+      {
+        "after": "orion",
+        "before": "eridanus",
+        "column": "constellation",
+        "scene": "constellation_08"
+      }
+    ],
+    "non_constellation_cells_identical": true,
+    "path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp5c_affine_recovery/submission_recommended_constellation_08_only.csv",
+    "reason": "The constellation_08-only submission matches the best reported public score while changing fewer cells than the combined submission.",
+    "sha256": "84fa0c3def2526694f8b89253e8e87c21b07d91bd5e0d6b798c74e64b09b4b17"
+  },
+  "rejected_for_deployment": {
+    "constellation_04": {
+      "proposed_name": "canis-major",
+      "reason": "No measurable public-score gain in the one-change ablation."
+    }
+  },
+  "status": "COMPLETE",
+  "taurus_policy": {
+    "excluded_from_confidence_calibration": true,
+    "excluded_from_model_selection": true,
+    "excluded_from_promotion_gates": true,
+    "excluded_from_validation": true,
+    "reason": "User states Taurus was intentionally constructed to skew results.",
+    "role": "adversarial_diagnostic_only"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "gates": {
+    "10_repeated_execution_deterministic": {
+      "pass": true
+    },
+    "11_runtime_practical_for_16_scenes": {
+      "pass": true
+    },
+    "12_peak_memory_within_safe_bound": {
+      "pass": true
+    },
+    "13_exp3_patch_cells_identical": {
+      "pass": true
+    },
+    "14_existing_production_tests_pass": {
+      "pass": false
+    },
+    "15_protected_artifacts_unchanged": {
+      "pass": true
+    },
+    "1_taurus_excluded_from_validation_and_promotion": {
+      "pass": true
+    },
+    "2_pisces_remains_correct": {
+      "pass": true
+    },
+    "3_scorpius_wrong_affine_not_overwritten": {
+      "pass": true
+    },
+    "4_no_development_regression": {
+      "pass": true
+    },
+    "5_synthetic_precision_each_seed_ge_0_90": {
+      "pass": true
+    },
+    "6_wrong_overwrite_each_seed_le_0_05": {
+      "pass": true
+    },
+    "7_correct_rescues_multiple_pattern_families": {
+      "pass": false
+    },
+    "8_direction_agrees_two_final_seeds": {
+      "pass": true
+    },
+    "9_order_invariance": {
+      "pass": true
+    }
+  },
+  "overall_pass": false,
+  "passed": 13,
+  "total": 15
+}

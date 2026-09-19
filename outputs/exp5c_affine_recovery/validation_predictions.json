@@ -1,0 +1,585 @@
+{
+  "base_path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp3_pairwise/submission_candidate.csv",
+  "csvs": {
+    "exploratory": {
+      "non_constellation_cells_identical": true,
+      "path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp5c_affine_recovery/submission_exploratory_name_only.csv",
+      "sha256": "087864e3949778b69fd3697195e7d3a6e5131749b226c923b010490e5104f59b"
+    },
+    "primary": {
+      "non_constellation_cells_identical": true,
+      "path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp5c_affine_recovery/submission_primary_name_only.csv",
+      "sha256": "087864e3949778b69fd3697195e7d3a6e5131749b226c923b010490e5104f59b"
+    },
+    "strict": {
+      "non_constellation_cells_identical": true,
+      "path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp5c_affine_recovery/submission_strict_name_only.csv",
+      "sha256": "087864e3949778b69fd3697195e7d3a6e5131749b226c923b010490e5104f59b"
+    }
+  },
+  "exact_exp3_baseline_available": true,
+  "no_kaggle_upload": true,
+  "records": {
+    "constellation_01": {
+      "accepted": {
+        "agreement": false,
+        "confidence": 0.005838316085643379,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "cetus",
+      "calibration_confidence": 0.005838316085643379,
+      "candidate_source_sha256": "d85a0f15427eefab04775e0dc805117dc322d2ca1825f8a082a74b0ea2b34ebd",
+      "existing_name": "orion",
+      "final_exploratory": "orion",
+      "final_primary": "orion",
+      "final_strict": "orion",
+      "graph_support": {
+        "largest_component": 5,
+        "supported_edge_fraction": 0.36363636363636365,
+        "supported_edges": 4
+      },
+      "held_out_support": 3,
+      "margin": 0.5212904454486447,
+      "peak_rss_platform_units": 181846016,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 36.08278300000529,
+      "score": 5.747246510369179,
+      "support": 7
+    },
+    "constellation_02": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.012159191200311323,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "perseus",
+      "calibration_confidence": 0.012159191200311323,
+      "candidate_source_sha256": "5be67c1a75e2af631b0288c0cc881ef462b463dd371c7f4a65c0f2949b2e2490",
+      "existing_name": "corona-australis",
+      "final_exploratory": "corona-australis",
+      "final_primary": "corona-australis",
+      "final_strict": "corona-australis",
+      "graph_support": {
+        "largest_component": 5,
+        "supported_edge_fraction": 0.4444444444444444,
+        "supported_edges": 4
+      },
+      "held_out_support": 3,
+      "margin": 0.23722072853314735,
+      "peak_rss_platform_units": 185843712,
+      "proposal_stream": "one_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 36.120617500011576,
+      "score": 5.784463652868187,
+      "support": 7
+    },
+    "constellation_03": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.04305758619920371,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "lepus",
+      "calibration_confidence": 0.04305758619920371,
+      "candidate_source_sha256": "2c66d19b1bcadb0e070799455a33b509bb108a3b1e9a34f6bbf522c80d72372c",
+      "existing_name": "orion",
+      "final_exploratory": "orion",
+      "final_primary": "orion",
+      "final_strict": "orion",
+      "graph_support": {
+        "largest_component": 6,
+        "supported_edge_fraction": 0.4166666666666667,
+        "supported_edges": 5
+      },
+      "held_out_support": 3,
+      "margin": 0.6236418545616846,
+      "peak_rss_platform_units": 185843712,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 36.44139987499511,
+      "score": 6.393965022645265,
+      "support": 7
+    },
+    "constellation_04": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.9998849966313883,
+        "exploratory": true,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": true,
+        "null_calibrated": true,
+        "primary": true,
+        "strict": true
+      },
+      "affine_winner": "canis-major",
+      "calibration_confidence": 0.9998849966313883,
+      "candidate_source_sha256": "2198fec03dccbf204bc81e6aaafd58352fab920ef86a7b735064d90fb37edf28",
+      "existing_name": "corona-australis",
+      "final_exploratory": "canis-major",
+      "final_primary": "canis-major",
+      "final_strict": "canis-major",
+      "graph_support": {
+        "largest_component": 11,
+        "supported_edge_fraction": 0.6875,
+        "supported_edges": 11
+      },
+      "held_out_support": 8,
+      "margin": 9.455787230846814,
+      "peak_rss_platform_units": 194199552,
+      "proposal_stream": "rank1",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 10.843619916005991,
+      "score": 15.957564578154757,
+      "support": 12
+    },
+    "constellation_05": {
+      "accepted": {
+        "agreement": false,
+        "confidence": 0.010480396043093794,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "pavo",
+      "calibration_confidence": 0.010480396043093794,
+      "candidate_source_sha256": "60dde5fb6de5d8477f375d4ecd3f636b2e296def0fe5683acf09e9cc323280b7",
+      "existing_name": "pisces",
+      "final_exploratory": "pisces",
+      "final_primary": "pisces",
+      "final_strict": "pisces",
+      "graph_support": {
+        "largest_component": 8,
+        "supported_edge_fraction": 0.6666666666666666,
+        "supported_edges": 8
+      },
+      "held_out_support": 4,
+      "margin": 1.473084922435107,
+      "peak_rss_platform_units": 194199552,
+      "proposal_stream": "adaptive",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 11.140027083005407,
+      "score": 8.74318891813341,
+      "support": 8
+    },
+    "constellation_06": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.013038762292844022,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "orion",
+      "calibration_confidence": 0.013038762292844022,
+      "candidate_source_sha256": "eaf871593050170ba8853868406d2aff1d9563ae4a2502ed0dfcee16351f9729",
+      "existing_name": "centaurus",
+      "final_exploratory": "centaurus",
+      "final_primary": "centaurus",
+      "final_strict": "centaurus",
+      "graph_support": {
+        "largest_component": 7,
+        "supported_edge_fraction": 0.6363636363636364,
+        "supported_edges": 7
+      },
+      "held_out_support": 3,
+      "margin": 0.05025654609292296,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "rank1",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 11.349581917005708,
+      "score": 7.12835167084285,
+      "support": 7
+    },
+    "constellation_07": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.44654019673698403,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "perseus",
+      "calibration_confidence": 0.44654019673698403,
+      "candidate_source_sha256": "b29249be8b582308ee9c603499a3e1b09c8d1d050dbbe9a68fe7902add8ad937",
+      "existing_name": "hydra",
+      "final_exploratory": "hydra",
+      "final_primary": "hydra",
+      "final_strict": "hydra",
+      "graph_support": {
+        "largest_component": 4,
+        "supported_edge_fraction": 0.625,
+        "supported_edges": 5
+      },
+      "held_out_support": 4,
+      "margin": 1.322932840454631,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "one_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 36.594272125003044,
+      "score": 7.382133915522062,
+      "support": 7
+    },
+    "constellation_08": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.9601979533550788,
+        "exploratory": true,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": true,
+        "null_calibrated": false,
+        "primary": true,
+        "strict": true
+      },
+      "affine_winner": "orion",
+      "calibration_confidence": 0.9601979533550788,
+      "candidate_source_sha256": "00fbbff383cdeaa65cdb20eb31e1243467761a1f5d21070bd826894505413972",
+      "existing_name": "eridanus",
+      "final_exploratory": "orion",
+      "final_primary": "orion",
+      "final_strict": "orion",
+      "graph_support": {
+        "largest_component": 7,
+        "supported_edge_fraction": 0.4666666666666667,
+        "supported_edges": 7
+      },
+      "held_out_support": 5,
+      "margin": 4.068391917737973,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "one_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 12.347300209003151,
+      "score": 9.721593409203164,
+      "support": 9
+    },
+    "constellation_10": {
+      "accepted": {
+        "agreement": false,
+        "confidence": 0.0055394670546173716,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "ophiuchus",
+      "calibration_confidence": 0.0055394670546173716,
+      "candidate_source_sha256": "a42277025bd176da3cb6a7cf9b0703bfbc236046b7184faa9ceb1c204b66ffb4",
+      "existing_name": "centaurus",
+      "final_exploratory": "centaurus",
+      "final_primary": "centaurus",
+      "final_strict": "centaurus",
+      "graph_support": {
+        "largest_component": 6,
+        "supported_edge_fraction": 0.8571428571428571,
+        "supported_edges": 6
+      },
+      "held_out_support": 2,
+      "margin": 0.011925756444658653,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 11.551373916008743,
+      "score": 5.745804495329816,
+      "support": 6
+    },
+    "constellation_11": {
+      "accepted": {
+        "agreement": false,
+        "confidence": 0.10773241818010972,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "lepus",
+      "calibration_confidence": 0.10773241818010972,
+      "candidate_source_sha256": "fa35be2f86471d25068171d8ee2c24c888f75549262485c5d0076b2d41a5fead",
+      "existing_name": "eridanus",
+      "final_exploratory": "eridanus",
+      "final_primary": "eridanus",
+      "final_strict": "eridanus",
+      "graph_support": {
+        "largest_component": 6,
+        "supported_edge_fraction": 0.4166666666666667,
+        "supported_edges": 5
+      },
+      "held_out_support": 3,
+      "margin": 0.524072129990004,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 10.195242458008579,
+      "score": 6.388523931125475,
+      "support": 7
+    },
+    "constellation_12": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.9754907640441239,
+        "exploratory": true,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": true,
+        "null_calibrated": true,
+        "primary": true,
+        "strict": true
+      },
+      "affine_winner": "lupus",
+      "calibration_confidence": 0.9754907640441239,
+      "candidate_source_sha256": "02dbb923b82f48adcd242bb63c59b3399698b407fa9ffa2bec41eaf4486c7883",
+      "existing_name": "lupus",
+      "final_exploratory": "lupus",
+      "final_primary": "lupus",
+      "final_strict": "lupus",
+      "graph_support": {
+        "largest_component": 5,
+        "supported_edge_fraction": 0.6428571428571429,
+        "supported_edges": 9
+      },
+      "held_out_support": 6,
+      "margin": 6.463757869201054,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "adaptive",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 35.69503824999265,
+      "score": 12.041698161043225,
+      "support": 10
+    },
+    "constellation_13": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.002593588363331819,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "cetus",
+      "calibration_confidence": 0.002593588363331819,
+      "candidate_source_sha256": "aad6053a59b2f8c60d56a079e8c01fa33b2356c2717c0ee887e37145a6524cfe",
+      "existing_name": "scorpius",
+      "final_exploratory": "scorpius",
+      "final_primary": "scorpius",
+      "final_strict": "scorpius",
+      "graph_support": {
+        "largest_component": 4,
+        "supported_edge_fraction": 0.5555555555555556,
+        "supported_edges": 5
+      },
+      "held_out_support": 3,
+      "margin": 0.5422033397429482,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 35.9844616670016,
+      "score": 6.08124498302438,
+      "support": 7
+    },
+    "constellation_14": {
+      "accepted": {
+        "agreement": false,
+        "confidence": 0.014602390625327309,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "orion",
+      "calibration_confidence": 0.014602390625327309,
+      "candidate_source_sha256": "11f3647df91b6111628458c3865487cbc4015d606afdce5bf69edfdb44923745",
+      "existing_name": "centaurus",
+      "final_exploratory": "centaurus",
+      "final_primary": "centaurus",
+      "final_strict": "centaurus",
+      "graph_support": {
+        "largest_component": 5,
+        "supported_edge_fraction": 0.38461538461538464,
+        "supported_edges": 5
+      },
+      "held_out_support": 4,
+      "margin": 1.4403940030246423,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 36.35428374999901,
+      "score": 6.96340388699176,
+      "support": 8
+    },
+    "constellation_15": {
+      "accepted": {
+        "agreement": false,
+        "confidence": 0.014996098753852256,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "ursa-minor",
+      "calibration_confidence": 0.014996098753852256,
+      "candidate_source_sha256": "5827f41680cee29e3fc870d0a5f905cd1ee2fb58d0260942cc7e251d51baea83",
+      "existing_name": "sagittarius",
+      "final_exploratory": "sagittarius",
+      "final_primary": "sagittarius",
+      "final_strict": "sagittarius",
+      "graph_support": {
+        "largest_component": 7,
+        "supported_edge_fraction": 1.0,
+        "supported_edges": 7
+      },
+      "held_out_support": 3,
+      "margin": 0.18508905956033583,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 11.839076167001622,
+      "score": 7.300900800842175,
+      "support": 7
+    },
+    "constellation_16": {
+      "accepted": {
+        "agreement": false,
+        "confidence": 0.014803748799468483,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "cetus",
+      "calibration_confidence": 0.014803748799468483,
+      "candidate_source_sha256": "115867e57e658247362eb8c5b8df5b25ed8f657f2e1f87986b22afbd21689c71",
+      "existing_name": "perseus",
+      "final_exploratory": "perseus",
+      "final_primary": "perseus",
+      "final_strict": "perseus",
+      "graph_support": {
+        "largest_component": 4,
+        "supported_edge_fraction": 0.4166666666666667,
+        "supported_edges": 5
+      },
+      "held_out_support": 4,
+      "margin": 1.5003429270574804,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 34.22470008399978,
+      "score": 6.7976079066336315,
+      "support": 8
+    },
+    "constellation_17": {
+      "accepted": {
+        "agreement": true,
+        "confidence": 0.06749040658641027,
+        "exploratory": false,
+        "isotonic": false,
+        "isotonic_confidence": 0.0,
+        "logistic": false,
+        "null_calibrated": false,
+        "primary": false,
+        "strict": false
+      },
+      "affine_winner": "ursa-minor",
+      "calibration_confidence": 0.06749040658641027,
+      "candidate_source_sha256": "46bb1a9eba7668b67742726030069308232b73d463a456e866327614547aa97d",
+      "existing_name": "hydra",
+      "final_exploratory": "hydra",
+      "final_primary": "hydra",
+      "final_strict": "hydra",
+      "graph_support": {
+        "largest_component": 6,
+        "supported_edge_fraction": 0.7142857142857143,
+        "supported_edges": 5
+      },
+      "held_out_support": 2,
+      "margin": 0.278438745163645,
+      "peak_rss_platform_units": 194789376,
+      "proposal_stream": "two_alt_top5",
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 36.049911958005396,
+      "score": 5.741565353338146,
+      "support": 6
+    }
+  },
+  "status": "COMPLETE",
+  "summary": {
+    "exploratory": {
+      "accepted": 3,
+      "changed": [
+        "constellation_04",
+        "constellation_08"
+      ],
+      "confirmed": [
+        "constellation_12"
+      ]
+    },
+    "primary": {
+      "accepted": 3,
+      "changed": [
+        "constellation_04",
+        "constellation_08"
+      ],
+      "confirmed": [
+        "constellation_12"
+      ]
+    },
+    "strict": {
+      "accepted": 3,
+      "changed": [
+        "constellation_04",
+        "constellation_08"
+      ],
+      "confirmed": [
+        "constellation_12"
+      ]
+    }
+  }
+}

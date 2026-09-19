@@ -1,0 +1,46 @@
+{
+  "failures": [
+    "one or more promotion gates failed"
+  ],
+  "implementation_complete": true,
+  "no_kaggle_upload": true,
+  "performance_gates_passed": false,
+  "recommended_submission": {
+    "base_path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp3_pairwise/submission_candidate.csv",
+    "base_sha256": "1bccbfd14be44095353b209a102c032b419c2dab9369bb538bb514410fbe7ea6",
+    "changes": [
+      {
+        "after": "orion",
+        "before": "eridanus",
+        "column": "constellation",
+        "scene": "constellation_08"
+      }
+    ],
+    "non_constellation_cells_identical": true,
+    "path": "/Users/preyansh/Documents/Computer Vision/Constellation_Detection/teammate_new_approach/outputs/exp5c_affine_recovery/submission_recommended_constellation_08_only.csv",
+    "reason": "The constellation_08-only submission matches the best reported public score while changing fewer cells than the combined submission.",
+    "sha256": "84fa0c3def2526694f8b89253e8e87c21b07d91bd5e0d6b798c74e64b09b4b17"
+  },
+  "required_artifacts": [
+    "context_audit.json",
+    "config.json",
+    "source_hashes.json",
+    "proposal_recall.json",
+    "development_results.json",
+    "ablations.json",
+    "synthetic_fit.json",
+    "synthetic_final_seed1.json",
+    "synthetic_final_seed2.json",
+    "validation_predictions.json",
+    "csv_diff.json",
+    "runtime.json",
+    "test_results.json",
+    "integrity.json",
+    "gates.json",
+    "deployment_policy.json",
+    "leaderboard_attribution.json",
+    "completion_audit.json"
+  ],
+  "status": "COMPLETE_WITH_BLOCKERS",
+  "submission_candidate_generated": true
+}

@@ -1,0 +1,37 @@
+{
+  "development_results.json": {
+    "max_seconds": 37.86038899999767,
+    "peak_rss_gib": 0.1915130615234375,
+    "peak_rss_platform_units": 205635584,
+    "scenes": 3,
+    "total_seconds": 59.82904199999757
+  },
+  "synthetic_final_seed1.json": {
+    "max_seconds": 18.204303125006845,
+    "peak_rss_gib": 1.3259124755859375,
+    "peak_rss_platform_units": 1423687680,
+    "scenes": 40,
+    "total_seconds": 154.45752141800767
+  },
+  "synthetic_final_seed2.json": {
+    "max_seconds": 8.321698583007674,
+    "peak_rss_gib": 1.5413665771484375,
+    "peak_rss_platform_units": 1655029760,
+    "scenes": 40,
+    "total_seconds": 135.32603454503987
+  },
+  "synthetic_fit.json": {
+    "max_seconds": 35.45833008400223,
+    "peak_rss_gib": 2.575592041015625,
+    "peak_rss_platform_units": 2765520896,
+    "scenes": 40,
+    "total_seconds": 337.0048328380217
+  },
+  "validation_predictions.json": {
+    "max_seconds": 36.594272125003044,
+    "peak_rss_gib": 0.1814117431640625,
+    "peak_rss_platform_units": 194789376,
+    "scenes": 16,
+    "total_seconds": 402.81368987505266
+  }
+}

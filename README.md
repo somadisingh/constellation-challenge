@@ -321,3 +321,62 @@ use the supplied green pattern edges or observed matched coordinates.
 Candidate retraining is therefore not the next justified step. Proposal
 generation must become genuinely affine-aware, and the supplied pattern graph
 must be extracted and used correctly.
+
+## Experiment 5C affine-recall continuation
+
+`experiments/exp5c_affine_recovery/` implements bounded signed-area affine-quad
+retrieval, deeper candidate-rank schedules, real pattern-edge verification,
+hypothesis-count-adjusted null confidence, resumable all-pattern synthetic screens,
+and frozen validation-wide identification inference. The full-budget development
+diagnostic recovers Taurus and keeps Pisces and Scorpius correct. Two untouched
+40-pattern synthetic seeds each accept one correct hypothesis at 1.0 selective
+precision, but correct rescues do not span more than one pattern family, so the
+method does not pass all promotion gates.
+
+The exact ignored Experiment 3 submission CSV is absent from this checkout. The
+frozen validation policy therefore records its three accepted affine winners but
+does not generate a name-only CSV: substituting the reconstructed classical CSV
+would violate the byte-identical patch-cell contract. See `EXPERIMENT5C_REPORT.md`
+and `outputs/exp5c_affine_recovery/`. No Kaggle upload was performed.
+
+### Experiment 5C post-submission attribution (2026-09-18)
+
+The exact Experiment 3 candidate was restored from the preserved local handoff.
+Frozen serialization confirmed that every patch cell is unchanged. User-reported
+Kaggle public scores isolate the gain: the Experiment 3 baseline and the
+`constellation_04`-only candidate both score 0.64695, while the
+`constellation_08`-only and combined candidates both score 0.69695. The recommended
+Experiment 5C candidate therefore changes only `constellation_08` from `eridanus`
+to `orion`; `constellation_04` is not deployed.
+
+Taurus is intentionally adversarial and is retained only as a mechanism diagnostic.
+It is excluded from validation, confidence calibration, model selection, and every
+promotion gate. Public-leaderboard ablations are deployment attribution, not
+validation evidence. See `outputs/exp5c_affine_recovery/leaderboard_attribution.json`.
+
+## Experiment 5D validation-hypothesis stability audit
+
+Experiment 5D audits the strongest remaining rejected validation hypothesis,
+`constellation_07: hydra -> perseus`, without reading Taurus or using Kaggle scores
+to choose thresholds. Fifteen frozen trials cover top-five, top-three, rank-one,
+two-pixel coordinate jitter, and ten-percent query dropout across three seeds.
+
+Perseus wins 9/15 trials. It wins every top-five and top-three trial, but zero
+rank-one trials, two of three coordinate-jitter trials, and only one of three
+query-dropout trials. The frozen stability rule fails on overall win rate and
+per-family consistency. No CSV is generated. See `EXPERIMENT5D_REPORT.md` and
+`outputs/exp5d_stability_audit/stability_results.json`.
+
+## Experiment 5E perturbation-stability calibration
+
+Experiment 5E tested whether perturbation stability could identify safe new
+validation corrections. The frozen screen selected all correct non-Taurus winners
+plus the five highest-confidence incorrect winners from each final synthetic seed.
+It applied top-one, top-three, two-pixel coordinate jitter, and ten-percent query
+dropout variants.
+
+Only 2/13 cases were stable under the three-of-four rule: one correct and one
+incorrect, for 50% stable precision. The calibration gate failed, so the
+validation-wide scan was not authorized and no CSV was generated. This rules out
+stability alone as the next deployment filter. See `EXPERIMENT5E_REPORT.md` and
+`outputs/exp5e_stability_calibration/stability_calibration.json`.

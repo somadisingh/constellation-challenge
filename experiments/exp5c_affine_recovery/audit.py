@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from experiments.exp5c_affine_recovery import (
-    ROOT, OUT, BASE_EXP3_CSV, SCENES
+    ROOT, OUT, BASE_EXP3_CSV, SCENES, TRAIN_GROUND_TRUTH, SAMPLE_SUBMISSION
 )
 from experiments.exp5c_affine_recovery.integrity import sha256_file
 
@@ -37,16 +37,23 @@ INSPECTED_FILES = [
 
 def generate_context_audit() -> dict:
     inspected = {}
+    unavailable = []
     for rel in INSPECTED_FILES:
         p = ROOT / rel
         if p.exists():
             inspected[rel] = sha256_file(p)
+        else:
+            unavailable.append(rel)
 
+    protected_paths = {
+        'exp3_submission_candidate_csv': BASE_EXP3_CSV,
+        'exp5b_submission_candidate_csv': ROOT / 'outputs' / 'exp5b_affine_proposals' / 'submission_candidate_name_rescue.csv',
+        'train_ground_truth_csv': TRAIN_GROUND_TRUTH,
+        'sample_submission_csv': SAMPLE_SUBMISSION,
+    }
     protected_hashes = {
-        'exp3_submission_candidate_csv': sha256_file(BASE_EXP3_CSV),
-        'exp5b_submission_candidate_csv': sha256_file(ROOT / 'outputs' / 'exp5b_affine_proposals' / 'submission_candidate_name_rescue.csv'),
-        'train_ground_truth_csv': sha256_file(ROOT / 'train_ground_truth.csv'),
-        'sample_submission_csv': sha256_file(ROOT / 'sample_submission.csv'),
+        key: (sha256_file(path) if path.exists() else None)
+        for key, path in protected_paths.items()
     }
 
     reproduced = {
@@ -72,16 +79,21 @@ def generate_context_audit() -> dict:
     ]
 
     audit = {
-        'status': 'COMPLETE',
+        'status': 'COMPLETE_WITH_MISSING_HISTORICAL_ARTIFACTS' if unavailable else 'COMPLETE',
         'files_inspected': inspected,
+        'unavailable_historical_files': unavailable,
         'protected_inputs': protected_hashes,
         'reproduced_previous_results': reproduced,
         'stale_or_contradictory_claims': stale_contradictory_claims,
         'baseline_patch_prediction_csv': {
             'path': str(BASE_EXP3_CSV.relative_to(ROOT)),
             'sha256': protected_hashes['exp3_submission_candidate_csv'],
-            'rows': 16,
-            'columns': 90,
+            'available': BASE_EXP3_CSV.exists(),
+            'rows': 16 if BASE_EXP3_CSV.exists() else None,
+            'columns': 90 if BASE_EXP3_CSV.exists() else None,
+            'consequence': None if BASE_EXP3_CSV.exists() else (
+                'Strict name-only validation CSV generation is blocked until the exact '
+                'ignored Experiment 3 artifact is restored; no substitute baseline is permitted.'),
         }
     }
     OUT.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,26 @@
+{
+  "descriptor_max_distance": 0.065,
+  "descriptor_neighbors": 6,
+  "max_condition_number": 8.0,
+  "max_scene_quads": 30000,
+  "primary_gate": {
+    "confidence_min": 0.9,
+    "held_out_min": 3,
+    "largest_component_min": 3,
+    "stream_agreement_min": 2,
+    "support_min": 7
+  },
+  "progressive_budgets": [
+    2500,
+    7000,
+    18000
+  ],
+  "proposal_budget": 18000,
+  "safe_peak_memory_gib": 8.0,
+  "strict_gate": {
+    "held_out_min": 5,
+    "margin_min": 2.0,
+    "support_min": 9
+  },
+  "tolerance_px": 18.0
+}

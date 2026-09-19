@@ -2173,3 +2173,82 @@ hypotheses, confirmed three existing labels, and changed only
 margin 6.908, support 11, held-out support 7). The resulting A/B CSV preserves
 every Exp3 patch cell exactly; full evidence is in
 `outputs/exp5b_affine_proposals/validation_rescue.json`.
+
+## Experiment 5C — efficient affine hypothesis recall (2026-09-16)
+
+Experiment 5C is implementation-complete and performance-negative under its
+predeclared gates (12/15 pass). It replaces the similarity-only triangle proposal
+ordering with bounded signed-area affine quadruple retrieval. Candidate alternatives
+retain query identity and are never expanded as an unrestricted Cartesian product.
+Verification uses one candidate per query and consolidated physical location, excludes
+the four proposal nodes from held-out support, consumes the extracted green-line graph,
+records residual quantiles and transform conditioning, and applies a multiplicity-
+adjusted spatial null. Descriptor distance is not part of final confidence.
+
+At the full 90,000-hypothesis development budget, the affine winner is the true class
+at rank one for all three repeatedly used skies. The frozen hybrid keeps Pisces and
+Scorpius and accepts Taurus over the existing Serpens Caput name. This is mechanism
+diagnosis, not an unbiased accuracy estimate.
+
+The fitting screen covers all 40 references having at least four usable nodes and
+records the other eight separately. Two untouched final seeds also complete all 40
+patterns with per-pattern atomic checkpoints. Raw accuracy is 1/40 and 2/40. The
+frozen primary selective gate accepts 1/40 on each seed and both accepted hypotheses
+are correct, for precision 1.0 and wrong-overwrite rate 0.0. However, the correct
+rescues do not span multiple pattern families, so promotion gate 7 fails. Broad
+stream-agreement arms are unsafe at roughly 4-5% precision.
+
+Frozen validation inference processes all 16 scenes in about 410 seconds and accepts
+three affine winners: constellation_04 -> canis-major, constellation_08 -> orion, and
+constellation_12 -> lupus. The exact ignored Experiment 3 baseline CSV is missing on
+this machine, so whether the latter two confirm or change its names cannot be computed,
+and no strict, primary or exploratory CSV is generated. The full available repository
+suite also cannot pass because historical ignored outputs and the PyTorch environment
+are absent; the isolated Experiment 5C suite passes 16/16 and protected-artifact
+integrity passes 240/240.
+
+No Kaggle upload occurred. The highest-value next action is to restore the exact
+`outputs/exp3_pairwise/submission_candidate.csv` artifact and rerun only frozen
+validation serialization.
+
+### Experiment 5C leaderboard attribution correction
+
+The exact Experiment 3 CSV was later recovered from the preserved local handoff.
+Name-only ablations establish that `constellation_08: eridanus -> orion` accounts
+for the full observed public-score increase from 0.64695 to 0.69695. The
+`constellation_04: corona-australis -> canis-major` ablation remains at 0.64695,
+and adding it to the `constellation_08` correction remains at 0.69695. The minimal
+`constellation_08`-only CSV is therefore the recommended deployment candidate.
+
+These Kaggle public-leaderboard results are post-hoc attribution and must not be
+used to fit thresholds or claim validation accuracy. Taurus is intentionally
+constructed to skew results and is now explicitly excluded from validation,
+confidence calibration, model selection, and promotion. Its traces remain only for
+debugging the affine proposal mechanism.
+
+## Experiment 5D — constellation_07 stability audit
+
+The next-ranked unlabeled hypothesis was `constellation_07: hydra -> perseus`.
+A rule frozen before execution required at least 80% overall winner stability,
+at least two of three wins in every perturbation family, median margin at least
+1.0, median support at least 7, and median held-out support at least 3.
+
+Perseus wins 9/15 trials. Structural strength passes when it wins, but stability
+does not: rank-one candidates produce Bootes in all three seeds; two-pixel jitter
+produces Perseus in two of three; ten-percent query dropout produces Perseus in
+only one of three. The hypothesis therefore depends on deeper alternatives and
+specific query availability. The audit rejects the override, emits no CSV, and
+does not use Taurus or leaderboard feedback.
+
+## Experiment 5E — perturbation-stability calibration
+
+The proposed stability filter was calibrated only on the two frozen synthetic
+final seeds. It selected 13 cases: all three correct non-Taurus winners and the
+five highest-confidence incorrect winners from each seed. Four perturbations were
+tested per case: top-one, top-three, two-pixel coordinate jitter, and ten-percent
+query dropout.
+
+Only one correct and one incorrect case passed the three-of-four stability rule.
+Stable precision was 0.50, below the frozen 0.80 threshold. The validation-wide
+scan was not authorized and no CSV was produced. Stability alone is therefore not
+an adequate correctness filter for this solver.

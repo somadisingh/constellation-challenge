@@ -1,0 +1,18 @@
+{
+  "experiments/exp5c_affine_recovery/__init__.py": "c447ec92a4cde5c4b2dfa7f50a58564ce8be2551753ca399804c52c5027ee6d1",
+  "experiments/exp5c_affine_recovery/ablations.py": "810a814a123675d4c020a78489cff1f58f4f8c9d8481a75c578628ed479f9aaf",
+  "experiments/exp5c_affine_recovery/audit.py": "85a06a2050e16e57c51e266b7cb861e9c41fc98d0cffe58e3f4d71ab84c3b9de",
+  "experiments/exp5c_affine_recovery/candidates.py": "dedffe6b925e25b834eb4840a8f72ffb093cae12d3617575b134dfb7a4117db4",
+  "experiments/exp5c_affine_recovery/confidence.py": "bb84392bfa1974f3944a9c5457c8ccd82489311027b5d3700eab807f133ff6f0",
+  "experiments/exp5c_affine_recovery/development.py": "1ef930204f070448b7c7eb89c4fdf3b61983fc2e830af5ba2b1efed893d65a23",
+  "experiments/exp5c_affine_recovery/finalize.py": "b05abd2eb29965e4fdeab598a8e8ccbb3a0ce48644412d5663f5c45a24308063",
+  "experiments/exp5c_affine_recovery/hashing.py": "6696a29828026199c8bba3eafbefb0bbcd48eedb1f1ccdacb3da3a9bd5a6991b",
+  "experiments/exp5c_affine_recovery/integrity.py": "a4a681bc31d6fdd3cd2c1e25a1745d6957bcb8e1e38af0d65d09fa939aede918",
+  "experiments/exp5c_affine_recovery/leaderboard_attribution.py": "4d49b92a95bd4c8d09e6cccfc66437b33481e7b15f64fc0414437e2e63aaeed1",
+  "experiments/exp5c_affine_recovery/pattern_index.py": "d00aaa389ba6826698d97c1d7ab8fb59bc48672933c893c6cbc45b4432a06838",
+  "experiments/exp5c_affine_recovery/report.py": "4ac155ffe1914d6d51ecaf6a94c34b317abe007acd8d34c0903fc66e2956c17b",
+  "experiments/exp5c_affine_recovery/solver.py": "8011547a26471dd550cfaa984aec304242e05d75e72843f289c8da53c2a2a9b9",
+  "experiments/exp5c_affine_recovery/synthetic.py": "e33b06835a39d17e82538f6058a79b4111fd9b84f05c86589bd78e07fede5036",
+  "experiments/exp5c_affine_recovery/validation.py": "7e43a4370ca54e802aba3e00fcc3eb73f12de8b73374fd3e24442e7478b94569",
+  "tests/test_exp5c_affine_recovery.py": "7a4381584d2796497d1e5a1cda4768a1999df3a684826f12df89e58a3e2796fc"
+}

@@ -1,0 +1,244 @@
+{
+  "matched_candidate_banks": true,
+  "scenes": {
+    "pisces": {
+      "alternate_only": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.1952096659952076,
+        "winner": "perseus"
+      },
+      "combined_separated": {
+        "correct": false,
+        "proposals": 25000,
+        "seconds": 3.1146464999910677,
+        "winner": "eridanus"
+      },
+      "complete_graph_diagnostic": {
+        "winner": "eridanus"
+      },
+      "depth1": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.6094815830001608,
+        "winner": "eridanus"
+      },
+      "depth3": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.1179324999975506,
+        "winner": "sagittarius"
+      },
+      "depth5": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.159006458998192,
+        "winner": "perseus"
+      },
+      "existing_recognizer_vs_hybrid": {
+        "affine": "eridanus",
+        "existing": "pisces"
+      },
+      "fixed_budget": {
+        "correct": false,
+        "proposals": 15000,
+        "seconds": 1.8399411249993136,
+        "winner": "eridanus"
+      },
+      "fixed_gate_vs_calibrated": "reported from development_results.json and synthetic final records",
+      "progressive_widening": {
+        "correct": false,
+        "proposals": 20000,
+        "seconds": 2.9843231249979,
+        "winner": "eridanus"
+      },
+      "random_vs_guided_proxy": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.6067381250031758,
+        "winner": "eridanus"
+      },
+      "rank1_only": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.6196875829919009,
+        "winner": "eridanus"
+      },
+      "triangle_side_ratio": {
+        "correct": false,
+        "hypotheses": 3000,
+        "winner": "eridanus"
+      },
+      "true": "pisces",
+      "without_held_out_support": {
+        "winner": "lupus"
+      },
+      "without_multiplicity_correction": {
+        "winner": "eridanus"
+      },
+      "without_real_graph": {
+        "winner": "eridanus"
+      }
+    },
+    "scorpius": {
+      "alternate_only": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.1430199580063345,
+        "winner": "sagittarius"
+      },
+      "combined_separated": {
+        "correct": false,
+        "proposals": 25000,
+        "seconds": 2.8122490829991875,
+        "winner": "sagittarius"
+      },
+      "complete_graph_diagnostic": {
+        "winner": "eridanus"
+      },
+      "depth1": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.5671125840017339,
+        "winner": "bootes"
+      },
+      "depth3": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.1558521249971818,
+        "winner": "carina"
+      },
+      "depth5": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.14248729099927,
+        "winner": "sagittarius"
+      },
+      "existing_recognizer_vs_hybrid": {
+        "affine": "sagittarius",
+        "existing": "scorpius"
+      },
+      "fixed_budget": {
+        "correct": false,
+        "proposals": 15000,
+        "seconds": 1.6740126660006354,
+        "winner": "crater"
+      },
+      "fixed_gate_vs_calibrated": "reported from development_results.json and synthetic final records",
+      "progressive_widening": {
+        "correct": false,
+        "proposals": 20000,
+        "seconds": 2.2035909590049414,
+        "winner": "crater"
+      },
+      "random_vs_guided_proxy": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.5670756250037812,
+        "winner": "bootes"
+      },
+      "rank1_only": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.5689005000022007,
+        "winner": "bootes"
+      },
+      "triangle_side_ratio": {
+        "correct": true,
+        "hypotheses": 2845,
+        "winner": "scorpius"
+      },
+      "true": "scorpius",
+      "without_held_out_support": {
+        "winner": "crater"
+      },
+      "without_multiplicity_correction": {
+        "winner": "crater"
+      },
+      "without_real_graph": {
+        "winner": "eridanus"
+      }
+    },
+    "taurus": {
+      "alternate_only": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.2830955829995219,
+        "winner": "carina"
+      },
+      "combined_separated": {
+        "correct": false,
+        "proposals": 25000,
+        "seconds": 3.148861207999289,
+        "winner": "carina"
+      },
+      "complete_graph_diagnostic": {
+        "winner": "carina"
+      },
+      "depth1": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.6414191670046421,
+        "winner": "lupus"
+      },
+      "depth3": {
+        "correct": true,
+        "proposals": 10000,
+        "seconds": 1.2856289580086013,
+        "winner": "taurus"
+      },
+      "depth5": {
+        "correct": false,
+        "proposals": 10000,
+        "seconds": 1.273006625007838,
+        "winner": "carina"
+      },
+      "existing_recognizer_vs_hybrid": {
+        "affine": "carina",
+        "existing": "serpens-caput"
+      },
+      "fixed_budget": {
+        "correct": false,
+        "proposals": 15000,
+        "seconds": 1.849298250002903,
+        "winner": "carina"
+      },
+      "fixed_gate_vs_calibrated": "reported from development_results.json and synthetic final records",
+      "progressive_widening": {
+        "correct": false,
+        "proposals": 20000,
+        "seconds": 2.4902047920040786,
+        "winner": "carina"
+      },
+      "random_vs_guided_proxy": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.6299438330024714,
+        "winner": "lupus"
+      },
+      "rank1_only": {
+        "correct": false,
+        "proposals": 5000,
+        "seconds": 0.6251014589943225,
+        "winner": "lupus"
+      },
+      "triangle_side_ratio": {
+        "correct": false,
+        "hypotheses": 2638,
+        "winner": "eridanus"
+      },
+      "true": "taurus",
+      "without_held_out_support": {
+        "winner": "canis-major"
+      },
+      "without_multiplicity_correction": {
+        "winner": "carina"
+      },
+      "without_real_graph": {
+        "winner": "carina"
+      }
+    }
+  },
+  "scope_note": "random_vs_guided_proxy compares unguided rank-one enumeration with graph-prioritized retrieval; it is not an unrestricted random search.",
+  "status": "COMPLETE"
+}

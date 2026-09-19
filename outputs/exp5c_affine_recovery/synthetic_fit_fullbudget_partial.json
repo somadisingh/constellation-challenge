@@ -1,0 +1,486 @@
+{
+  "completed": {
+    "aquila": {
+      "correct": false,
+      "decisions": {
+        "confidence": 0.0,
+        "exploratory": false,
+        "primary": false,
+        "strict": false
+      },
+      "features": [
+        0.42361703950018814,
+        6.0,
+        2.0,
+        7.0,
+        5.0,
+        0.7762876046245709,
+        17.079062448997885,
+        1.5690816457314447,
+        -0.0,
+        1.0
+      ],
+      "generation_seed": 2921765257,
+      "margin": 0.42361703950018814,
+      "pattern": "aquila",
+      "peak_rss_platform_units": 171393024,
+      "proposal_trace": {
+        "adaptive": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 5,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26668
+        },
+        "one_alt_top3": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 5,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26611
+        },
+        "one_alt_top5": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 5,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26688
+        },
+        "prosac": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 5,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26507
+        },
+        "rank1": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 5,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 9427
+        },
+        "two_alt_top3": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 5,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26697
+        },
+        "two_alt_top5": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 5,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26652
+        }
+      },
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 78.17766433299403,
+      "top": {
+        "appearance_mean": 0.7762876046245709,
+        "appearance_min": 0.6541703301809652,
+        "boundary_valid": true,
+        "condition_number": 3.8022360141710605,
+        "graph": {
+          "largest_component": 5,
+          "supported_edge_fraction": 0.4666666666666667,
+          "supported_edges": 7
+        },
+        "held_out_support": 2,
+        "hypotheses_tested": 36000,
+        "mapped_nodes": [
+          [
+            3443.909328091813,
+            3411.601971197196
+          ],
+          [
+            3340.7649433273527,
+            3236.0198730822985
+          ],
+          [
+            3033.88075237701,
+            2509.033175960507
+          ],
+          [
+            2608.3189786536122,
+            1070.3552405493822
+          ],
+          [
+            3060.9619958974286,
+            2713.5068489674713
+          ],
+          [
+            3155.1411747117463,
+            3590.795295903401
+          ],
+          [
+            2519.0248886794793,
+            1451.910866924444
+          ],
+          [
+            2721.7356720405182,
+            2277.445217558055
+          ],
+          [
+            2598.4559097035612,
+            1963.2078074650872
+          ],
+          [
+            2745.0539642011454,
+            2588.3603438421587
+          ],
+          [
+            3180.0283422620023,
+            4280.472394460393
+          ],
+          [
+            1983.2199530809075,
+            118.48660540326318
+          ],
+          [
+            2585.6670261332224,
+            2387.483831317391
+          ],
+          [
+            2221.0471769528426,
+            1147.3164556423944
+          ],
+          [
+            2042.292777672743,
+            671.1014357871372
+          ],
+          [
+            2012.1424123465267,
+            1153.8292505094096
+          ],
+          [
+            2689.9672938626018,
+            3804.692019456672
+          ],
+          [
+            1830.2524062744262,
+            923.2784432010533
+          ],
+          [
+            2134.0292288389633,
+            2598.577106993807
+          ],
+          [
+            2252.7072428389856,
+            3354.833993112319
+          ],
+          [
+            1879.6936978453991,
+            2416.5847266036253
+          ]
+        ],
+        "matrix": [
+          [
+            -1189.1252088213832,
+            -4157.889697816267
+          ],
+          [
+            -1509.8551645031062,
+            -804.9406918421394
+          ],
+          [
+            2573.2521507520137,
+            2269.947281139879
+          ]
+        ],
+        "name": "sagittarius",
+        "null_probability_adjusted": 1.0,
+        "null_probability_raw": 0.02154242985076718,
+        "null_significance_adjusted": -0.0,
+        "null_significance_raw": 1.666705312585677,
+        "pairs": [
+          [
+            15,
+            38
+          ],
+          [
+            18,
+            20
+          ],
+          [
+            6,
+            45
+          ],
+          [
+            12,
+            40
+          ],
+          [
+            13,
+            111
+          ],
+          [
+            8,
+            8
+          ]
+        ],
+        "proposal_stream": "one_alt_top5",
+        "residual_max": 17.460814595394968,
+        "residual_mean": 6.721757410640407,
+        "residual_median": 1.872306832101431,
+        "residual_p90": 17.079062448997885,
+        "score": 5.756293101708754,
+        "seed_nodes": [
+          6,
+          12,
+          15,
+          18
+        ],
+        "seed_scene_queries": [
+          9,
+          4,
+          7,
+          8
+        ],
+        "stream_agreement": 1,
+        "support": 6,
+        "unique_matched_queries": 6
+      },
+      "winner": "sagittarius"
+    },
+    "aries": {
+      "correct": false,
+      "decisions": {
+        "confidence": 0.0,
+        "exploratory": false,
+        "primary": false,
+        "strict": false
+      },
+      "features": [
+        0.15177046430174101,
+        6.0,
+        2.0,
+        5.0,
+        6.0,
+        0.6874019544763857,
+        12.758350054561685,
+        1.203375563752643,
+        -0.0,
+        1.0
+      ],
+      "generation_seed": 3345452330,
+      "margin": 0.15177046430174101,
+      "pattern": "aries",
+      "peak_rss_platform_units": 177291264,
+      "proposal_trace": {
+        "adaptive": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 4,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26746
+        },
+        "one_alt_top3": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 4,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26809
+        },
+        "one_alt_top5": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 4,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26932
+        },
+        "prosac": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 4,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 18065
+        },
+        "rank1": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 4,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 4416
+        },
+        "two_alt_top3": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 4,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26732
+        },
+        "two_alt_top5": {
+          "best_correct_descriptor_distance": null,
+          "best_correct_descriptor_rank_proxy": null,
+          "candidate_correspondences": 4,
+          "correct_quad_can_form": false,
+          "enters_scene_quad_budget": false,
+          "scene_quads": 26638
+        }
+      },
+      "proposals_evaluated": 90000,
+      "runtime_seconds": 73.88623833400197,
+      "top": {
+        "appearance_mean": 0.6874019544763857,
+        "appearance_min": 0.46380297682992266,
+        "boundary_valid": true,
+        "condition_number": 2.33134312579786,
+        "graph": {
+          "largest_component": 6,
+          "supported_edge_fraction": 0.5555555555555556,
+          "supported_edges": 5
+        },
+        "held_out_support": 2,
+        "hypotheses_tested": 54000,
+        "mapped_nodes": [
+          [
+            2473.5799939961476,
+            984.8548996463093
+          ],
+          [
+            2552.0259120995647,
+            1198.7944642229388
+          ],
+          [
+            2183.6668391907883,
+            1045.6938513322414
+          ],
+          [
+            2286.7782359515277,
+            1217.8713859632328
+          ],
+          [
+            2951.0398098581636,
+            2199.149132509852
+          ],
+          [
+            2518.3990564370542,
+            1975.0440568416054
+          ],
+          [
+            2955.825722660372,
+            2475.45879910581
+          ],
+          [
+            1216.4490949623082,
+            1153.979302718982
+          ],
+          [
+            1276.2130453169339,
+            1707.3850986610692
+          ],
+          [
+            294.7402730620506,
+            1692.1267923395967
+          ],
+          [
+            827.8701470568562,
+            2268.6623351549633
+          ],
+          [
+            196.14282447787627,
+            2146.546177888651
+          ],
+          [
+            -801.9936953977995,
+            1188.8758514016306
+          ]
+        ],
+        "matrix": [
+          [
+            -1545.5604358320943,
+            -1527.064017374027
+          ],
+          [
+            -3136.9382607562784,
+            340.997267723083
+          ],
+          [
+            1610.0567122824496,
+            1634.9570882912988
+          ]
+        ],
+        "name": "lepus",
+        "null_probability_adjusted": 1.0,
+        "null_probability_raw": 0.004367821050950089,
+        "null_significance_adjusted": -0.0,
+        "null_significance_raw": 2.3597351629262393,
+        "pairs": [
+          [
+            11,
+            25
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            6,
+            36
+          ],
+          [
+            4,
+            60
+          ],
+          [
+            8,
+            94
+          ],
+          [
+            5,
+            22
+          ]
+        ],
+        "proposal_stream": "two_alt_top5",
+        "residual_max": 15.581095591970596,
+        "residual_mean": 8.032440184236082,
+        "residual_median": 7.145927493539373,
+        "residual_p90": 12.758350054561685,
+        "score": 5.418866751631756,
+        "seed_nodes": [
+          4,
+          6,
+          9,
+          11
+        ],
+        "seed_scene_queries": [
+          7,
+          2,
+          5,
+          12
+        ],
+        "stream_agreement": 1,
+        "support": 6,
+        "unique_matched_queries": 6
+      },
+      "winner": "lepus"
+    }
+  },
+  "seed": 42001,
+  "small_patterns": [
+    "caelum",
+    "chamaeleon",
+    "fornax",
+    "horologium",
+    "indus",
+    "mensa",
+    "sculptor",
+    "sextans"
+  ],
+  "status": "RUNNING"
+}

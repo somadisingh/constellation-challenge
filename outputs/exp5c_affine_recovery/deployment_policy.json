@@ -1,0 +1,71 @@
+{
+  "empirical_fit": {
+    "accepted": 2,
+    "false_accept_rate": 0.0,
+    "precision": 1.0,
+    "threshold": 0.8698721686991006
+  },
+  "exploratory_confidence_min": 0.75,
+  "fit_seed": 42001,
+  "model": {
+    "coefficients": [
+      -3.6754520425348502,
+      0.3225907046039479,
+      -0.0703193754183779,
+      -0.0703193754183779,
+      -0.20612672384376887,
+      0.621393149541688,
+      0.3988289299109633,
+      -0.3041549408778283,
+      -1.1240616272124706,
+      0.1693123886683626,
+      0.1512542976573308
+    ],
+    "features": [
+      "margin",
+      "support",
+      "held_out_support",
+      "supported_edges",
+      "largest_component",
+      "appearance_mean",
+      "residual_p90",
+      "condition_log",
+      "null_significance",
+      "stream_agreement"
+    ],
+    "median": [
+      0.20363758645925767,
+      6.0,
+      2.0,
+      5.0,
+      5.0,
+      0.7954901914469961,
+      11.917152930770875,
+      1.2019471789207343,
+      0.0,
+      1.0
+    ],
+    "n": 40,
+    "positives": 4,
+    "scale": [
+      0.2851016837226548,
+      1.0,
+      1.0,
+      1.4826,
+      1.4826,
+      0.04678134825705973,
+      3.727066369839232,
+      0.4128953258169003,
+      1.0,
+      1.0
+    ],
+    "status": "fit"
+  },
+  "primary_gate": {
+    "confidence_min": 0.9,
+    "held_out_min": 3,
+    "largest_component_min": 3,
+    "stream_agreement_min": 2,
+    "support_min": 7
+  }
+}
