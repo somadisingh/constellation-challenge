@@ -2252,3 +2252,12 @@ Only one correct and one incorrect case passed the three-of-four stability rule.
 Stable precision was 0.50, below the frozen 0.80 threshold. The validation-wide
 scan was not authorized and no CSV was produced. Stability alone is therefore not
 an adequate correctness filter for this solver.
+# Experiment 6 finding: duplicate safety is necessary but not sufficient
+
+The candidate banks contain substantial spatial duplication, including cross-query collisions. Explicit query/cluster uniqueness prevents fake support, but the real development winners were still incorrect and were safely rejected by the fallback gate. Both untouched synthetic seeds had 1.00 accepted precision at roughly one-quarter coverage. The full validation pass accepted no new names. Implementation completed; promotion gates did not all pass; no submission candidate was generated.
+
+# Experiment 6R correction and finding
+
+The Experiment 6 synthetic precision statement above is invalid: the old solver tested only the true pattern, set acceptance from correctness and hardcoded wrong overwrite. Its seed-2 JSON coverage was 0.5333, not the reported 0.2444, but neither value is valid multiclass identification evidence. Experiment 6R's honest 48-class synthetic runs had zero top-1 accuracy and zero accepted coverage on both final seeds.
+
+The new single/two-edge graph-pair proposer is real and invariant to pattern, node, query and candidate enumeration. It improved development MRR from 0.02414 to 0.04127; Pisces reached rank 42 and Scorpius rank 14, still far from the top-five targets. Performance gates failed, so no candidate was promoted.

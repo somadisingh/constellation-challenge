@@ -380,3 +380,10 @@ incorrect, for 50% stable precision. The calibration gate failed, so the
 validation-wide scan was not authorized and no CSV was generated. This rules out
 stability alone as the next deployment filter. See `EXPERIMENT5E_REPORT.md` and
 `outputs/exp5e_stability_calibration/stability_calibration.json`.
+# Experiment 6: duplicate-safe RANSAC identification
+
+Experiment 6 added automatic truth-free correspondence generation, constrained similarity/reflection/anisotropic/affine RANSAC, explicit duplicate-safe one-to-one consensus, all-inlier refitting, and an inclusive 12-pixel final score. The conservative policy accepted no validation overwrites, so no new CSV was promoted and the Experiment 5C `constellation_08: eridanus -> orion` baseline remains current. See `EXPERIMENT6_REPORT.md` and `outputs/exp6_ransac_identification/`.
+
+## Experiment 6R: evidence repair and invariant graph-pair RANSAC
+
+Experiment 6R invalidated Experiment 6's synthetic precision, hardcoded wrong-overwrite result, named-only ablations and claimed graph proposer. It implemented and measured real single-edge and adjacent-two-edge candidate-pair proposals with full solver invariance tests and honest 48-class synthetic competition. Performance remained insufficient: Pisces rank 42, Scorpius rank 14, final-seed top-1 accuracy 0.25/0 and complete abstention. No validation overwrite was accepted. The Experiment 5C baseline remains deployed. See `EXPERIMENT6R_REPORT.md`.

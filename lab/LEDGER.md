@@ -751,3 +751,22 @@ Artifacts: `outputs/imagebench/v1/manifest.json`, `audit.json`,
 - **Decision:** do not run validation-wide stability scanning and do not create a
   CSV. Stability alone cannot serve as a deployment filter. Taurus was excluded and
   Kaggle scores were not used.
+# Experiment 6 — duplicate-safe RANSAC identification
+
+- Baseline: Experiment 5C recommended constellation_08-only CSV.
+- Scope: constellation names only; cached localization candidates reused.
+- Result: 16-scene validation run, zero accepted overwrites, zero CSV changes.
+- Synthetic final seeds: precision 1.00/1.00, coverage 0.2667/0.2444.
+- Tests: 310 passed, 62 skipped, 0 failed, 0 errors (372 total).
+- Decision: implementation complete; performance gates failed; no CSV promoted; no Kaggle upload.
+
+# Experiment 6R — evidence repair and invariant graph-pair RANSAC
+
+- Corrected Exp6: graph proposer/ablations absent; synthetic precision tautological; stage traces placeholder; finalizer absent.
+- Old seed-2 coverage correction: 0.5333, not 0.2444, though not valid multiclass evidence.
+- New proposer: 420 real graph edges, canonical edge/pair descriptors, both endpoint orientations, invariant full-solver results.
+- Development ranks: Pisces 42, Scorpius 14, Taurus 35; all development overwrites rejected.
+- Honest final seeds: 48-class top-1 0.25/0, top-five 0.50/0.25, accepted coverage 0/0.
+- Validation: 16 scenes; zero accepted overwrites; no CSV generated.
+- Tests: 322 passed, 62 skipped, 0 failed/errors (384 total).
+- Decision: evidence-supported negative experiment; performance gates failed; Experiment 5C baseline retained; no upload.
